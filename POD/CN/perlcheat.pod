@@ -1,0 +1,108 @@
+=encoding utf8
+
+=head1 NAME
+
+perlcheat - Perl 5 速查
+
+=head1 DESCRIPTION
+
+这个“速查”实际上是一个真正的“手册”－－巴掌大的一个小册子，用来记录
+一些开始学习 Perl 编程时遇到的知识点。它并不是面面俱到的，但是覆盖了约
+194 个 Perl 特性。
+
+=head2 速查
+
+建议你把它打印出来 ^_^ 帖在墙上，如果要考试的话，还可以藏在袖筒里 ^_^
+
+  上下文  变量名前缀           数组          哈希表
+  void      $scalar    整个:   @array        %hash
+  scalar    @array     切片:   @array[0, 2]  @hash{'a', 'b'}
+  list      %hash      元素:   $array[0]     $hash{'a'}
+            &sub
+            *glob    标量值类型
+                     数值, 字符串, 引用, glob, undef
+  引用
+  \     引用            $$foo[1]       等效于 $foo->[1]
+  $@%&* 解引用          $$foo{bar}     等效于 $foo->{bar}
+  []    匿名数组        ${$$foo[1]}[2] 等效于 $foo->[1]->[2]
+  {}    匿名哈希表      ${$$foo[1]}[2] 等效于 $foo->[1][2]
+  \()   一列引用
+                          数值 VS 字符串      有用的链接
+  操作符优先              =          =        perl.plover.com
+  ->                      +          .        search.cpan.org
+  ++ --                   == !=      eq ne         cpan.org
+  **                      < > <= >=  lt gt le ge   pm.org
+  ! ~ \ u+ u-             <=>        cmp           tpj.com
+  =~ !~                                            perldoc.com
+  * / % x                 语法
+  + - .                   for    (LIST) { }, for (a;b;c) { }
+  << >>                   while  ( ) { }, until ( ) { }
+  命名一元操作符          if     ( ) { } elsif ( ) { } else { }
+  < > <= >= lt gt le ge   unless ( ) { } elsif ( ) { } else { }
+  == != <=> eq ne cmp     foreach 任何时候都可以缩写为 for
+  &
+  | ^              正则表达式元字符           正则表达式修饰符
+  &&               ^     字符串开始           /i 大小写不敏感
+  ||               $     字符串结束(\n之前)   /m ^$ 表示行首行末
+  .. ...           +     一个或多个           /s . 包括 \n
+  ?:               *     零个或多个           /x 忽略所有空白
+  = += -= *= 等等  ?     零个或一个           /g 全局（重复）
+  , =>             {3,7} 重复 3 到 7 次
+  列表操作符       ()    捕获             正则表达式字符类
+  not              (?:)  不捕获           .  == [^\n]
+  and              []    字符类或集合     \s == [\x20\f\t\r\n]
+  or xor           |     二选一           \w == [A-Za-z0-9_]
+                   \b    单词边界         \d == [0-9]
+                   \z    字符串结尾       \S, \W and \D negate
+  一定要这样做！
+  use strict;        不要这样做！     有用的链接
+  use warnings;      "$foo"           perl.com
+  my $var;           $$variable_name  perlmonks.org
+  open() or die $!;  `$userinput`     use.perl.org
+  use Modules;       /$userinput/     perl.apache.org
+                                      parrotcode.org
+  函数返回值
+  stat      localtime    caller         特殊变量
+   0 dev    0 秒(0-59)   0 包名         $_    默认变量
+   1 ino    1 分(0-59)   1 文件名       $0    程序名称
+   2 mode   2 时(0-23)   2 行号         $/    输入分隔符
+   3 nlink  3 日(1-30)   3 调用子程序   $\    输出分隔符
+   4 uid    4 月-1(0-11) 4 有没有参数？ $|    句柄不缓冲
+   5 gid    5 年-1900    5 想要数组吗？ $!    系统错误信息
+   6 rdev   6 星期几     6 eval 文本    $@    eval 错误信息
+   7 size   7 当年第几天 7 is_require   $$    当前进程号
+   8 atime  8 是否夏令时 8 hints        $.    当前句柄当前行号
+   9 mtime               9 bitmask      @ARGV 命令行参数
+  10 ctime  just use                    @INC  模块搜索路径
+  11 blksz  POSIX::      3..9 只有带参  @_    子程序参数
+  12 blcks  strftime!    数调用时有效   %ENV  环境变量
+
+=head1 ACKNOWLEDGEMENTS
+
+本文的最初出现在 Perl Monks 上，后来又有一些人提出过建议。感谢 Perl Monks！
+
+特别要感谢的是 Damian Conway，他不仅提了很多重要的修改建议，而且还耐心地
+数了数一共列出了多少个 Perl 特性，并且还制作了一个 Perl 6 版本。
+
+=head1 作者
+
+本文由 Juerd Waalboer <juerd@cpan.org>, 在很多 Perl Monks 人的帮助下完成。
+
+=head1 参见
+
+ http://perlmonks.org/?node_id=216602      最初的帖子
+ http://perlmonks.org/?node_id=238031      Damian Conway 的 Perl6 版本
+ http://juerd.nl/site.plp/perlcheat        Perl 速查主页
+
+=head1 翻译者及翻译声明
+
+本文由 flw (C<flw@cpan.org>) 翻译，翻译成果首次出现在 I<中国 Perl 协会>
+http://www.perlchina.org) 的协作开发平台上。
+
+PerlChina.org 本着“在国内推广 Perl” 的目的，组织人员翻译本文。读者可
+以在遵守原作者许可协议、尊重原作者及译作者劳动成果的前提下，任意发布或
+修改本文。
+
+如果你对本文有任何意见，欢迎来信指教。本人非常欢迎与各位交流。
+
+=cut

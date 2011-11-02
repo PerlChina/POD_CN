@@ -1,0 +1,178 @@
+# -*- mode: outline; outline-regexp: "[=]+" -*-
+=encoding utf8
+
+=head1 NAME
+
+perlutil - Perl 发行版中的实用程序
+
+=head1 DESCRIPTION
+
+Perl 发行版除了 Perl 解释器外还在你的系统上安装了一系列的实用程序。其中
+一些程序也是被 Perl 发行版本身用于安装过程。本文档将列出所有的这些程
+序，解释它们的用途，尽量提供相关模块文档的链接。
+
+=head2 文档
+
+=over 3
+
+=item L<perldoc|perldoc>
+
+Perl 文档的主要界面是 C<perldoc>，你可能已经知道了。F<perldoc> 可以从当
+前目录下的任何文件、系统中安装的模块、或者标准文档（比如本文）中提取
+并格式化里面的文档。使用 C<perldoc E<lt>nameE<gt>> 可以得到本文中提到的任
+何程序的信息。
+
+=item L<pod2man|pod2man> 和 L<pod2text|pod2text>
+
+如果在终端中运行 F<perldoc>，通常它是调用 F<pod2man> 来转换 POD（Plain
+Old Documentation —— 参见 L<perlpod>）为 manpage，然后运行 F<man> 来显
+示。如果不能使用 F<man> 命令，就使用 F<pod2text> ，并输出到你喜欢的
+pager。
+
+=item L<pod2html|pod2html> 和 L<pod2latex|pod2latex>
+
+除了这两个，还有两个转换程序：F<pod2html> 能从 POD 中产生 HTML 页
+面；F<pod2latex> 能够产生 LaTeX 文件。
+
+=item L<pod2usage|pod2usage>
+
+如果你想知道怎样使用这里描述的程序，F<pod2usage> 可以只抽提出“USAGE”部
+分；一些程序会在你用 C<-help> 运行程序时自动对自身调用 F<pod2usage>。
+
+=item L<podselect|podselect>
+
+F<pod2usage> 是 F<podselect> 的一个特例。它是一个从文档的 POD 里抽提出
+某个名字的部分。例如，就像程序有“USAGE”部分，Perl 的模块通常有
+“SYNOPSIS”部分：C<podselect -s "SYNOPSIS" ...> 将能从一个给定文件中抽
+提出这一部分。
+
+=item L<podchecker|podchecker>
+
+如果你要用 POD 写你自己的文档，F<podchecker> 程序可以为你的标记检查错
+误。
+
+=item L<splain|splain>
+
+F<splain> 是 L<perldiag> 的接口，把你的错误信息粘贴给它，它就会向你解
+释。
+
+=item L<roffitall|roffitall>
+
+C<roffitall> 程序不是安装在你的系统中，但是在你 Perl 源文件的 F<pod/>
+目录下。它能将发行版中的文档转换成 F<*roff> 格式，然后产生 PostScript
+或者文本文件。
+
+=back
+
+=head2 转换器
+
+为了帮助你将遗留程序转换成 Perl，我们有三个转换过滤器：
+
+=over 3
+
+=item L<a2p|a2p>
+
+F<a2p> 将 F<awk> 脚本转换成 Perl 程序。例如，C<a2p -F:> 对简单的
+F<awk> 脚本 C<{print $2> 将产生一个类似于这样的 Perl 程序：
+
+    while (<>) {
+        ($Fld1,$Fld2) = split(/[:\n]/, $_, 9999);
+        print $Fld2;
+    }
+
+=item L<s2p|s2p>
+
+同样，F<s2p> 将 F<sed> 脚本转换成 Perl 程序。对 C<s/foo/bar> 使用
+F<s2p> 将产生类似这样的代码：
+
+    while (<>) {
+        chomp;
+        s/foo/bar/g;
+        print if $printit;
+    }
+
+=item L<find2perl|find2perl>
+
+最后，F<find2perl> 用 L<File::Find|File::Find> 模块将 C<find> 命令转换
+成等价的 Perl 命令。例如，C<find2perl . -user root -perm 4000 -print>
+为 C<File::Find> 产生这样的调用函数：
+
+    sub wanted {
+        my ($dev,$ino,$mode,$nlink,$uid,$gid);
+        (($dev,$ino,$mode,$nlink,$uid,$gid) = lstat($_)) &&
+        $uid == $uid{'root'}) &&
+        (($mode & 0777) == 04000);
+        print("$name\n");
+    }
+
+=back
+
+除了这些转换其它语言的过滤器，L<pl2pm|pl2pm> 程序能帮你将 Perl 4 旧式
+的库转换成新式的 Perl5 模块。
+
+=head2 系统管理员
+
+=over 3
+
+=item L<libnetcfg|libnetcfg>
+
+运行 libnetcfg 命令来显示或者更改 libnet 的配置。
+
+=back
+
+=head2 开发
+
+这里有一系列的程序帮助你开发 Perl 程序，特别是用 C 扩展 Perl。
+
+=over 3
+
+=item L<perlbug|perlbug>
+
+推荐使用 F<perlbug> 向开发人员提交 perl 解释器本身或者任何标准模块中的
+bug。在使用它提交一个 bug 前，请先通读一遍 F<perlbug> 的文档。
+
+=item L<h2ph|h2ph>
+
+在存在 XS 系统连接 C 库之前，程序员曾经使用读取 C 头文件的方法得到库中
+的常量。你可能还能看到 C<require 'syscall.ph'> 或者相似的代码，这个
+F<.ph> 文件是对相应 F<.h> 文件使用 F<h2ph> 程序来创建的。参考 F<h2ph>
+的文档来获得如何一次性转化多个头文件的方法。
+
+=item L<c2ph|c2ph> 和 L<pstruct|pstruct>
+
+F<c2ph> 和 F<pstruct> 都用于将 C 结构和联合声明转换成 Perl 代码，为在
+Perl 中使用 C 提供另一种方法。它们事实上是相同的程序，但是调用的方法不
+同会有不同的结果。现在，F<h2xs> 逐渐取代了它们。
+
+=item L<h2xs|h2xs>
+
+F<h2xs> 将 C 头文件转换成 XS 模块，然后尽可能的为 C 库和 Perl 模块提供
+粘合代码。它对于创建纯 Perl 模块也是很有用的。
+
+=item L<dprofpp|dprofpp>
+
+Perl 提供了一个 profiler：F<Devel::DProf> 模块。F<dprofpp> 程序分析这
+个 profiler 的输出，然后告诉你哪个函数花费了最多的运行时间。参见
+L<Devel::DProf>。
+
+=item L<perlcc|perlcc>
+
+F<perlcc> 是实验中的 Perl 编译器的接口。
+
+=back
+
+=head2 SEE ALSO
+
+L<perldoc|perldoc>, L<pod2man|pod2man>, L<perlpod>,
+L<pod2html|pod2html>, L<pod2usage|pod2usage>, L<podselect|podselect>,
+L<podchecker|podchecker>, L<splain|splain>, L<perldiag>,
+L<roffitall|roffitall>, L<a2p|a2p>, L<s2p|s2p>, L<find2perl|find2perl>,
+L<File::Find|File::Find>, L<pl2pm|pl2pm>, L<perlbug|perlbug>,
+L<h2ph|h2ph>, L<c2ph|c2ph>, L<h2xs|h2xs>, L<dprofpp|dprofpp>,
+L<Devel::DProf>, L<perlcc|perlcc>
+
+=head1 TRANSLATORS
+
+YE Wenbin
+
+=cut
