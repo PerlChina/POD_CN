@@ -32,11 +32,16 @@ perlsub - Perl 子程序(sub)
 调用子程序：
 
     NAME(LIST);    # 用圆括号的时候
-    NAME LIST;     # Parentheses optional if predeclared/imported.
-    &NAME(LIST);   # Circumvent prototypes.
-    &NAME;     # Makes current @_ visible to called subroutine.
+    NAME LIST;     # 子程序预先有定义或者从别的模块导入的话，圆括号可以没有
+    &NAME(LIST);   # 不做原型检查
+    &NAME;         # 当前的@_作为被调子程序的参数
 
 =head1 DESCRIPTION
+
+和很多语言一样，Perl同样提供了用户自定义子程序的机制。子程序可以位于主程
+序文件的任意位置，通过C<do>、C<require>或C<use>关键字从其它源文件中加
+载，或者通过C<eval>在运行时动态生成，或者以匿名子程序的形式存在。甚至可
+以通过值为子程序名或者值为代码引用的变量来调用子程序。
 
 Like many languages, Perl provides for user-defined subroutines.
 These may be located anywhere in the main program, loaded in from
@@ -44,6 +49,8 @@ other files via the C<do>, C<require>, or C<use> keywords, or
 generated on the fly using C<eval> or anonymous subroutines.
 You can even call a function indirectly using a variable containing
 its name or a CODE reference.
+
+Perl采用了一种简单的函数调用及其返回值的模型：
 
 The Perl model for function call and return values is simple: all
 functions are passed as parameters one single flat list of scalars, and
