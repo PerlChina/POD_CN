@@ -1,3 +1,4 @@
+
 =encoding utf8
 
 =for comment
@@ -7,10 +8,7 @@ Consistent formatting of this file is achieved with:
 =head1 NAME
 
 perlootut - Object-Oriented Programming in Perl Tutorial
-
-=head1 DATE
-
-This document was created in February, 2011.
+perlootut - Perl教程之面向对象编程
 
 =head1 DESCRIPTION
 
@@ -20,19 +18,34 @@ oriented design. Then it introduces several different OO systems from
 L<CPAN|http://search.cpan.org> which build on top of what Perl
 provides.
 
+此文档提供了一个使用Perl进行面向对象编程的介绍。它以一个简短的关于面向对
+象设计的概念的概述开始，之后介绍了L<CPAN|http://search.cpan.org>上基于
+Perl的各种不同的OO系统。
+
+
 By default, Perl's built-in OO system is very minimal, leaving you to
 do most of the work. This minimalism made a lot of sense in 1994, but
 in the years since Perl 5.0 we've seen a number of common patterns
 emerge in Perl OO. Fortunately, Perl's flexibility has allowed a rich
 ecosystem of Perl OO systems to flourish.
 
+默认情况下，Perl内置的OO系统非常小巧，你必须自己做大部分工作。这种小巧在
+1994年那个时候是合理的，但自Perl5.0发布以来，我们看到许多通用的模式在
+Perl OO里面显现。幸运的是，Perl的灵活性允许Perl OO的生态系统演化和开花。
+
 If you want to know how Perl OO works under the hood, the L<perlobj>
 document explains the nitty gritty details.
+
+如果你想知道Perl OO底层是如何工作的，L<perlobj>提供了详细的信息。
 
 This document assumes that you already understand the basics of Perl
 syntax, variable types, operators, and subroutine calls. If you don't
 understand these concepts yet, please read L<perlintro> first. You
 should also read the L<perlsyn>, L<perlop>, and L<perlsub> documents.
+
+此文档假设你已经掌握了基本的Perl语法，变量类型，操作符和函数调用。如果你
+还不理解这些概念，请先阅读L<perlintro>。同时你还应该阅读L<perlsyn>，
+L<perlop>，L<perlsub>。
 
 =head1 OBJECT-ORIENTED FUNDAMENTALS
 
@@ -43,18 +56,33 @@ object-oriented code. If you're already familiar with these terms, you
 should still skim this section, since it explains each concept in terms
 of Perl's OO implementation.
 
+大部分面向对象编程系统都有一些相同的概念。你可能已经听说过了一些像“类”，
+“对象”，“方法”和“属性”的术语。理解这些概念，能够使你更加容易的阅读和编写
+面向对象的代码。如果你已经熟悉了这些，你仍然可以阅读一下这一节，它用Perl
+的术语解释了这些概念。
+
 Perl's OO system is class-based. Class-based OO is fairly common. It's
 used by Java, C++, C#, Python, Ruby, and many other languages. There
 are other object orientation paradigms as well. JavaScript is the most
 popular language to use another paradigm. JavaScript's OO system is
 prototype-based.
 
+Perl的OO系统基于类(class-based)。基于类的OO是相当通用的，java，C++，
+C#，Python，Ruby和很多其他语言都基于此。当然也有其他类型的面向对象。
+Javascript就是使用另一种范式的流行语言。Javascript的OO系统是基于原型的
+(prototype-based)。
+
 =head2 Object
+=head2 对象
 
 An B<object> is a data structure that bundles together data and
 subroutines which operate on that data. An object's data is called
 B<attributes>, and its subroutines are called B<methods>. An object can
 be thought of as a noun (a person, a web service, a computer).
+
+B<对象>是聚合了数据和函数的数据结构，函数操作数据。对象的数据叫做B<属性>
+，它的函数叫做B<方法>。一个对象可以想象成为一个名词(一个人，一个web服务
+，一台计算机)。
 
 An object represents a single discrete thing. For example, an object
 might represent a file. The attributes for a file object might include
@@ -64,18 +92,33 @@ that object's path would be "/etc/hostname", its content would be
 "foo\n", and it's last modification time would be 1304974868 seconds
 since the beginning of the epoch.
 
+一个对象代表了一个单一但不连续的物体（????）。比如，它可能代表一个文件。
+文件对象的属性可能包括路径，内容，最后修改时间。如果我们创建一个代表
+F</etc/hostname>的对象，这个文件在名为"foo.example.com"的机器上。这个对
+象的路径就应该是"/etc/hostname"，内容是"foo\n"，最后修改时间是自epoch后
+1304974868秒。
+
 The methods associated with a file might include C<rename()> and
 C<write()>.
+
+和文件相关的方法可以有C<rename()>和C<write()>。
 
 In Perl most objects are hashes, but the OO systems we recommend keep
 you from having to worry about this. In practice, it's best to consider
 an object's internal data structure opaque.
 
+Perl的大部分对象都是hash，但我们推荐的OO系统会使你不必担心这一点。实际上
+，最好将对象看做一个不透明的内部数据结构。
+
 =head2 Class
+=head2 类
 
 A B<class> defines the behavior of a category of objects. A class is a
 name for a category (like "File"), and a class also defines the
 behavior of objects in that category.
+
+B<类>定义了一个类别的对象的行为。类是一个类别的名字(比如"File")，类还
+定义了这个类别中的对象的行为。
 
 All objects belong to a specific class. For example, our
 F</etc/hostname> object belongs to the C<File> class. When we want to
@@ -83,15 +126,24 @@ create a specific object, we start with its class, and B<construct> or
 B<instantiate> an object. A specific object is often referred to as an
 B<instance> of a class.
 
+所有的对象都属于某个类。比如，我们的F</etc/hostname>对象属于C<File>类。
+当我们想创建一个特定对象，我们以它的类开始，B<创建>或者B<实例化>一个对象
+。对象经常被称为一个类的B<实例>。
+
 In Perl, any package can be a class. The difference between a package
 which is a class and one which isn't is based on how the package is
 used. Here's our "class declaration" for the C<File> class:
 
+在Perl中，任何包都可以是一个类。一个包是否为类的区别在于这个包是如何被使
+用的。以下是我们的C<File>类的"类定义"。
   package File;
 
 In Perl, there is no special keyword for constructing an object.
 However, most OO modules on CPAN use a method named C<new()> to
 construct a new object:
+
+同时对于Perl来说，没有一个特定的关键字来创建对象。但是，大部分CPAN上的OO
+模块都使用C<new()>来创建对象。
 
   my $hostname = File->new(
       path          => '/etc/hostname',
@@ -101,6 +153,7 @@ construct a new object:
 
 (Don't worry about that C<< -> >> operator, it will be explained
 later.)
+(别担心那个C<< -> >>操作符，之後会解释)
 
 =head3 Blessing
 
@@ -109,14 +162,25 @@ an instance of any Perl data type (scalar, array, etc.). Turning a
 plain data structure into an object is done by B<blessing> that data
 structure using Perl's C<bless> function.
 
+如前所述，大多Perl的对象都是hash，但它也可以是任何Perl数据类型的实例(标
+量，数组等)。把一个普通的Perl数据结构转换成对象的方式是使用C<bless>函数
+对它B<Blessing>。
+
 While we strongly suggest you don't build your objects from scratch,
 you should know the term B<bless>. A B<blessed> data structure (aka "a
 referent") is an object. We sometimes say that an object has been
 "blessed into a class".
 
+尽管我们强烈建议你不要从最底层开始创建你的对象，但你也应该知道B<bless>这
+个术语。一个B<blessed>的数据结构(比如引用)是一个对象。我们有时候会说一个
+对象被“blessed into a class”。
+
 Once a referent has been blessed, the C<blessed> function from the
 L<Scalar::Util> core module can tell us its class name. This subroutine
 returns an object's class when passed an object, and false otherwise.
+
+当引用被blessed，L<Scalar::Util>模块中的C<blessed>函数可以告诉我们它的类
+名。当参数为对象时，这个函数返回对象的类，否则返回false。
 
   use Scalar::Util 'blessed';
 
@@ -124,24 +188,33 @@ returns an object's class when passed an object, and false otherwise.
   print blessed($hostname);  # File
 
 =head3 Constructor
+=head3 构造器
 
 A B<constructor> creates a new object. In Perl, a class's constructor
 is just another method, unlike some other languages, which provide
 syntax for constructors. Most Perl classes use C<new> as the name for
 their constructor:
 
+B<构造器>创建新对象。不像其他语言，提供了构造器语法，在Perl中，一个类的
+构造器只是一个方法。大部分Perl的类使用C<new>作为构造器的名字。
+
   my $file = File->new(...);
 
 =head2 Methods
+=head2 方法
 
 You already learned that a B<method> is a subroutine that operates on
 an object. You can think of a method as the things that an object can
 I<do>. If an object is a noun, then methods are its verbs (save, print,
 open).
 
+你已经知道了B<方法>就是操作对象的子程序。你也可以将方法看做对象能做的事
+情。如果对象是名词，那么方法就是它的动词(保存，打印，打开)。
+
 In Perl, methods are simply subroutines that live in a class's package.
 Methods are always written to receive the object as their first
 argument:
+在Perl中，方法是类的包里面的子程序。方法的第一个参数总是对象。
 
   sub print_info {
       my $self = shift;
@@ -154,11 +227,17 @@ argument:
 
 What makes a method special is I<how it's called>. The arrow operator
 (C<< -> >>) tells Perl that we are calling a method.
+方法的特殊之处在于它是“怎样被调用的”。箭头操作符C<< -> >>告诉Perl我们在
+调用一个方法。
 
 When we make a method call, Perl arranges for the method's B<invocant>
 to be passed as the first argument. B<Invocant> is a fancy name for the
 thing on the left side of the arrow. The invocant can either be a class
 name or an object. We can also pass additional arguments to the method:
+
+当我们调用方法时，Perl传递的第一个参数是方法的B<invocant>。B<Invocant>是
+一个假想的名字，它代表箭头左边的部分。Invocant可以是class名或者一个对象
+。我们当然也可以给方法传递其他参数。
 
   sub print_info {
       my $self   = shift;
@@ -171,36 +250,60 @@ name or an object. We can also pass additional arguments to the method:
   # The file is located at /etc/hostname
 
 =head2 Attributes
+=head2 属性
 
 Each class can define its B<attributes>. When we instantiate an object,
 we assign values to those attributes. For example, every C<File> object
 has a path. Attributes are sometimes called B<properties>.
 
+所有的类都可以定义它的B<属性>。当我们初始化一个对象时，我们给这些属性赋
+值。比如，每个C<文件>对象有一个路径。属性(attributes)有时也叫做
+B<properties>
+
 Perl has no special syntax for attributes. Under the hood, attributes
 are often stored as keys in the object's underlying hash, but don't
 worry about this.
+
+Perl没有替属性定义特殊的语法。在底层，属性就是类所对应hash的键，对此没什
+么可以担心的。
 
 We recommend that you only access attributes via B<accessor> methods.
 These are methods that can get or set the value of each attribute. We
 saw this earlier in the C<print_info()> example, which calls C<<
 $self->path >>.
 
+我们推荐你B<存取器>来访问属性。存取器是用来获得或设置属性的值的方法。我
+们在C<print_info()>里面已经看到过了: C<< $self->path >>
+
 You might also see the terms B<getter> and B<setter>. These are two
 types of accessors. A getter gets the attribute's value, while a setter
 sets it. Another term for a setter is B<mutator>
+
+你可能也见过B<getter>和B<setter>这样的术语。这是两种不同的存取器。Getter
+用来获得属性的值，而setter用来设置值。Setter的另一个叫法是B<mutator>
 
 Attributes are typically defined as read-only or read-write. Read-only
 attributes can only be set when the object is first created, while
 read-write attributes can be altered at any time.
 
+属性可以定义为只读或者可读写的。只读的属性只能在创建对象的时候被赋值，而
+可读写的属性在任何时候都能够更改。
+
 The value of an attribute may itself be another object. For example,
 instead of returning its last mod time as a number, the C<File> class
 could return a L<DateTime> object representing that value.
 
+属性的值也可以是另外一个对象。比如，C<File>类可以返回一个L<DateTime>对象
+代表其最后修改时间，而不是返回数字。
+
 It's possible to have a class that does not expose any publicly
 settable attributes. Not every class has attributes and methods.
 
+类也可以没有任何公开的可设置的属性。不是每一个类都有属性和方法。
+
 =head2 Polymorphism
+
+=head2 多态
 
 B<Polymorphism> is a fancy way of saying that objects from two
 different classes share an API. For example, we could have C<File> and
@@ -208,29 +311,54 @@ C<WebPage> classes which both have a C<print_content()> method. This
 method might produce different output for each class, but they share a
 common interface.
 
+B<多态>是来自不同类的对象公用一个API的说法。比如，C<File>和C<WebPage>类
+都可以有C<print_content()>方法。对于不同的类，调用这个方法的输出可能不同
+，但他们有通用的接口。
+
 While the two classes may differ in many ways, when it comes to the
 C<print_content()> method, they are the same. This means that we can
 try to call the C<print_content()> method on an object of either class,
 and B<we don't have to know what class the object belongs to!>
 
+尽管在很多方面，这两个类都不尽相同，但对于C<print_content>方法来说，他们
+是一样的。这意味着我们可以在任一类的对象上调用这个C<print_content>方法，
+而B<我们都不需要知道对象属于哪个类!>
+
 Polymorphism is one of the key concepts of object-oriented design.
 
+多态是面向对象设计的关键概念之一。
+
 =head2 Inheritance
+
+=head2 继承
 
 B<Inheritance> lets you create a specialized version of an existing
 class. Inheritance lets the new class to reuse the methods and
 attributes of another class.
 
+B<继承>可以让你创建已经存在的类的一个特殊版本。继承创建的新类能够复用原
+来类的方法和属性。
+
 For example, we could create an C<File::MP3> class which B<inherits>
 from C<File>. An C<File::MP3> B<is-a> I<more specific> type of C<File>.
 All mp3 files are files, but not all files are mp3 files.
+
+比如，我们可以创建一个C<File::MP3>类，这个类从C<File>继承而来。
+C<File::MP3>是C<File>的一个I<更加具体>的版本。所有的mp3都是文件，但不是
+所有的文件都是mp3。
+
 
 We often refer to inheritance relationships as B<parent-child> or
 C<superclass/subclass> relationships. Sometimes we say that the child
 has an B<is-a> relationship with its parent class.
 
+我们经常把继承关系称为B<父-子>或者C<超类/子类>。有时候我们说子类是一个父
+类。
+
 C<File> is a B<superclass> of C<File::MP3>, and C<File::MP3> is a
 B<subclass> of C<File>.
+
+C<File>是C<File::MP3>的超类，而C<File::MP3>是C<FILE>的子类。
 
   package File::MP3;
 
@@ -239,23 +367,39 @@ B<subclass> of C<File>.
 The L<parent> module is one of several ways that Perl lets you define
 inheritance relationships.
 
+L<parent>模块是Perl让你定义继承继承关系的诸多方法之一。
+
 Perl allows multiple inheritance, which means that a class can inherit
 from multiple parents. While this is possible, we strongly recommend
 against it. Generally, you can use B<roles> to do everything you can do
 with multiple inheritance, but in a cleaner way.
+
+Perl允许多重继承，这意味着一个类可以继承自多个父类。尽管这是可能的，但我
+们强烈反对这样做。通常，你可以使用B<roles>来做到用多重继承能做到的所有事
+情，而且做法还能更加清晰。
 
 Note that there's nothing wrong with defining multiple subclasses of a
 given class. This is both common and safe. For example, we might define
 C<File::MP3::FixedBitrate> and C<File::MP3::VariableBitrate> classes to
 distinguish between different types of mp3 file.
 
+注意对一个给定类，给它定义多个子类没有什么关系，这是通用和安全的做法。比
+如，我们可以第一C<File::MP3::FixedBitrate>和
+C<File::MP3::VariableBitrate>类，用来区分不同类别的mp3文件。
+
 =head3 Overriding methods and method resolution
+
+=head3 方法重载和方法
 
 Inheritance allows two classes to share code. By default, every method
 in the parent class is also available in the child. The child can
 explicitly B<override> a parent's method to provide its own
 implementation. For example, if we have an C<File::MP3> object, it has
 the C<print_info()> method from C<File>:
+
+继承允许两个类共享代码。默认情况下，父类的所有方法都能在子类中使用。子类
+可以提供它自己的实现来B<重载>父类的方法。比如，如果我们有一个
+C<File::MP3>对象，它有从C<File>而来的C<print_info()>方法。
 
   my $cage = File::MP3->new(
       path          => 'mp3s/My-Body-Is-a-Cage.mp3',
@@ -269,6 +413,8 @@ the C<print_info()> method from C<File>:
 
 If we wanted to include the mp3's title in the greeting, we could
 override the method:
+
+如果我们希望能够打印mp3的名字，那么可以重载这个方法。
 
   package File::MP3;
 
@@ -293,10 +439,20 @@ at each parent class in turn. For C<File::MP3>, its only parent is
 C<File>. If C<File::MP3> does not define the method, but C<File> does,
 then Perl calls the method in C<File>.
 
+决定使用哪个方法的过程叫做B<方法解析>。Perl所做的是：先查看对象的类(这里
+是C<File::MP3>)，如果类定义了这个方法，那么调用这个类的版本。否者，Perl
+查看每个父类。对于C<File::MP3>，它的父类只有C<File>。如果C<File::MP3>没
+有定义这个方法，而C<File>定义了，那么Perl就会调用C<File>里面的方法。
+
 If C<File> inherited from C<DataSource>, which inherited from C<Thing>,
 then Perl would keep looking "up the chain" if necessary.
 
+如果C<File>继承自C<DataSource>，而C<DataSource>继承自C<Thing>，那么如果
+必要的话，Perl会“源着继承链自下而上”的查找方法。
+
 It is possible to explicitly call a parent method from a child:
+
+可以明确的在子类中调用父类的方法。
 
   package File::MP3;
 
@@ -313,25 +469,43 @@ The C<SUPER::> bit tells Perl to look for the C<print_info()> in the
 C<File::MP3> class's inheritance chain. When it finds the parent class
 that implements this method, the method is called.
 
+C<SUPER::>部分告诉Perl，在C<File::MP3>继承链中查找C<print_info()>方法。
+当在父类中找到了这个方法，则调用之。
+
 We mentioned multiple inheritance earlier. The main problem with
 multiple inheritance is that it greatly complicates method resolution.
 See L<perlobj> for more details.
 
+之前我们提到了多重继承。它的主要问题就是使方法解析变得非常复杂。更多细节
+可以查阅L<perlobj>。
+
 =head2 Encapsulation
+
+=head2 封装
 
 B<Encapsulation> is the idea that an object is opaque. When another
 developer uses your class, they don't need to know I<how> it is
 implemented, they just need to know I<what> it does.
 
+B<封装>的理念是每个对象都是不透明的。当其他开发人员使用你的类时，他们
+不需要知道这个类是I<如何>实现的，而只需要知道它做什么就可以了。
+
 Encapsulation is important for several reasons. First, it allows you to
 separate the public API from the private implementation. This means you
 can change that implementation without breaking the API.
+
+封装在许多方面都是非常重要的。首先，它允许你将公用API和内部实现分开。这
+意味着你能在修改实现的同时不破坏API接口。
 
 Second, when classes are well encapsulated, they become easier to
 subclass. Ideally, a subclass uses the same APIs to access object data
 that its parent class uses. In reality, subclassing sometimes involves
 violating encapsulation, but a good API can minimize the need to do
 this.
+
+其次，如果很好的封装了类，继承也变得更加简单。理想情况是，子类使用和父类
+相同的接口来访问对象数据。实际上，有时候继承会破坏封装，但好的接口会减少
+这种破坏。
 
 We mentioned earlier that most Perl objects are implemented as hashes
 under the hood. The principle of encapsulation tells us that we should
@@ -340,11 +514,21 @@ data in that hash. The object systems that we recommend below all
 automate the generation of accessor methods. If you use one of them,
 you should never have to access the object as a hash directly.
 
+之前我们提到大部分Perl的对象都是用hash实现的。封装的原则告诉我们不应依赖
+于此，而应该使用存取器来获得hash中的数据。我们接下来推荐的对象系统都能自
+动生成存取器。如果你使用它们之中的任意一个，你永远不需要使用hash来访问对
+象。
+
 =head2 Composition
+
+=head2 组合
 
 In object-oriented code, we often find that one object references
 another object. This is called B<composition>, or a B<has-a>
 relationship.
+
+在面向对象的代码中，我们经常能看到一个对象指向另外一个对象，这叫做对象
+B<组合>，或者B<有一个>关系。
 
 Earlier, we mentioned that the C<File> class's C<last_mod_time>
 accessor could return a L<DateTime> object. This is a perfect example
@@ -352,17 +536,29 @@ of composition. We could go even further, and make the C<path> and
 C<content> accessors return objects as well. The C<File> class would
 then be B<composed> of several other objects.
 
+之前我们提到C<File>类的C<last_mod_time>方法能够返回一个C<DateTime>对象。
+这就是一个对象组合的例子。我们也可以更进一步，让C<path>和C<content>存取
+器也返回对象。那么C<File>就和许多其他的对象进行了组合。
+
 =head2 Roles
+
+=head2 角色B<Roles>
 
 B<Roles> are something that a class I<does>, rather than something that
 it I<is>. Roles are relatively new to Perl, but have become rather
 popular. Roles are B<applied> to classes. Sometimes we say that classes
 B<consume> roles.
 
+B<角色>是一个类“做的事情”，而不是类是什么。对Perl来说，角色是一个相对较
+新，同时也很流行的概念。角色B<应用>于类。有时我们说类B<消耗>角色。
+
 Roles are an alternative to inheritance for providing polymorphism.
 Let's assume we have two classes, C<Radio> and C<Computer>. Both of
 these things have on/off switches. We want to model that in our class
 definitions.
+
+角色是继承之外，提供多态性的另一种选择。假设我们有两个类，C<Radio>和
+C<Computer>。这两种物体都有开关，我们想在类定义中为之建立模型。
 
 We could have both classes inherit from a common parent, like
 C<Machine>, but not all machines have on/off switches. We could create
@@ -370,21 +566,38 @@ a parent class called C<HasOnOffSwitch>, but that is very artificial.
 Radios and computers are not specializations of this parent. This
 parent is really a rather ridiculous creation.
 
+我们可以让两个类都继承自同一个父类，比如C<Machine>，但是不是所有的机器都
+有开关键。我们也可以建立一个叫C<HasOnOffSwitch>的父类，但这也太文绉绉了
+。Radio和Computers不是这种父类的特殊体。这个父类建的有点搞笑。
+
 This is where roles come in. It makes a lot of sense to create a
 C<HasOnOffSwitch> role and apply it to both classes. This role would
 define a known API like providing C<turn_on()> and C<turn_off()>
 methods.
 
+这就是角色可以出现的地方。此时建立一个C<HasOnOffSwitch>角色并将之应用于
+类显得更加合理。这个角色可以定义如C<turn_on()>和C<turn_off()>之类的借口
+。
+
 Perl does not have any built-in way to express roles. In the past,
 people just bit the bullet and used multiple inheritance. Nowadays,
 there are several good choices on CPAN for using roles.
 
+Perl并没有关于角色的内置接口。过去，人们都是痛苦的选择使用多重继承。而现
+在，CPAN上有许多选择可以让你使用角色。
+
 =head2 When to Use OO
+
+=head2 什么时候使用OO
 
 Object Orientation is not the best solution to every problem. In I<Perl
 Best Practices> (copyright 2004, Published by O'Reilly Media, Inc.),
 Damian Conway provides a list of criteria to use when deciding if OO is
 the right fit for your problem:
+
+面向对象并不是所有问题的最好解决方案。在I<Perl最佳实践>(copyright 2004,
+Published by O'Reilly Media, Inc.)中，Damian Conway提供了一个决定OO是否
+是解决你的问题的最好方案的列表。
 
 =over 4
 
@@ -392,20 +605,28 @@ the right fit for your problem:
 
 The system being designed is large, or is likely to become large.
 
+在设计的系统非常庞大，或者可能变得庞大。
+
 =item *
 
 The data can be aggregated into obvious structures, especially if
 there's a large amount of data in each aggregate.
+
+数据可以聚合成一个明显的结构，特别是每个聚合中有大量数据的时候。
 
 =item *
 
 The various types of data aggregate form a natural hierarchy that
 facilitates the use of inheritance and polymorphism.
 
+各种类型的数据会形成自然的层次，让继承和多态的使用更为容易。
+
 =item *
 
 You have a piece of data on which many different operations are
 applied.
+
+你有一些数据，许多不同的运算都会应用在那些数据上面。
 
 =item *
 
@@ -413,31 +634,46 @@ You need to perform the same general operations on related types of
 data, but with slight variations depending on the specific type of data
 the operations are applied to.
 
+你必须对一些相关类型的数据做一些相同的通用运算，但是会根据运算所应用于特
+定的数据类型而有些细微的差异。
+
 =item *
 
 It's likely you'll have to add new data types later.
+
+你可能日后要增加新的数据类型。
 
 =item *
 
 The typical interactions between pieces of data are best represented by
 operators.
 
+数据之间的交互最好以运算符表示
+
 =item *
 
 The implementation of individual components of the system is likely to
 change over time.
 
+系统中个别组件的时间可能随时间而改变
+
 =item *
 
 The system design is already object-oriented.
+
+系统设计已经是面向对象的
 
 =item *
 
 Large numbers of other programmers will be using your code modules.
 
+有很多其他程序员会使用你的代码模块
+
 =back
 
 =head1 PERL OO SYSTEMS
+
+=head1 PERL OO 系统
 
 As we mentioned before, Perl's built-in OO system is very minimal, but
 also quite flexible. Over the years, many people have developed systems
