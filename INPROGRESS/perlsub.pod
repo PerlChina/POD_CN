@@ -67,7 +67,13 @@ function without an explicit return statement is called a subroutine, but
 there's really no difference from Perl's perspective.)
 
 在函数里，传入的参数被存在数组变量C<@_>里。举例来说，调用函数时传入两个
-参数，那么第一个参数存在C<$_[0]>里，第二个参数存在C<$_[1]>里。
+参数，那么第一个参数存在C<$_[0]>里，第二个参数存在C<$_[1]>里。数组变量
+C<@_>是局部变量，但每个数组元素都是相应的实参的别名。举例来说，如果改变
+数组元素C<$_[0]>，相应的实参也会改变（也有例外，如果该实参不是变量，会报
+错）。如果函数的参数是数组或哈希变量的一个元素，且该函数被调用时数组或哈
+希的元素并不存在，那么在函数中修改参数会创建对应的数组或哈希变量的元素。
+（某些早期版本的Perl不管有没有在函数中修改参数都会创建对应的数组或哈希变
+量的元素。）给整个数组变量C<@_>赋值将会解除别名，将无法修改任何参数。
 
 Any arguments passed in show up in the array C<@_>.  Therefore, if
 you called a function with two arguments, those would be stored in
@@ -82,6 +88,14 @@ created the element whether or not the element was assigned to.)
 Assigning to the whole array C<@_> removes that aliasing, and does
 not update any arguments.
 
+函数中最后一个表达式的值即是函数的返回值，空函数的返回值是一个空列表。详
+细来说，可以用C<return>语句退出函数，该语句可指定可选的返回值作为参数，
+该参数会相应的根据函数调用时的上下文（列表，标量或空值上下文）而求值。如
+果没有指定返回值，函数在列表上下文下返回空列表，在标量上下文下返回
+C<undef>，在空值上下文下什么都不返回。如果返回一个或多个聚合类型（数组、
+哈希）的值，该数组的元素或哈希的键值将会成为一个大列表的元素而返回。
+
+
 The return value of a subroutine is the value of the last expression
 evaluated by that sub, or the empty list in the case of an empty sub.
 More explicitly, a C<return> statement may be used to exit the
@@ -93,6 +107,12 @@ value in scalar context, or nothing in void context.  If you return
 one or more aggregates (arrays and hashes), these will be flattened
 together into one large indistinguishable list.
 
+Perl不能给形参命名。实际使用中，你能做的就是在函数中把参数列表赋值给一个
+C<my()>列表（注：以此来命名参数）。没有被声明为私有变量的变量是全局变量。
+声明私有变量的细节可参考L<"用my()声明私有变量">和L<"local()和临时值">。
+需要把相关的函数放到一个单独的包里（可以是一个单独的文件），可参考
+L<perlmod/"包">。
+
 Perl does not have named formal parameters.  In practice all you
 do is assign to a C<my()> list of these.  Variables that aren't
 declared to be private are global variables.  For gory details
@@ -100,6 +120,8 @@ on creating private variables, see L<"Private Variables via my()">
 and L<"Temporary Values via local()">.  To create protected
 environments for a set of functions in a separate package (and
 probably a separate file), see L<perlmod/"Packages">.
+
+示例：
 
 Example:
 
@@ -111,6 +133,8 @@ Example:
     return $max;
     }
     $bestday = max($mon,$tue,$wed,$thu,$fri);
+
+示例：
 
 Example:
 
@@ -135,12 +159,17 @@ Example:
     ...
     }
 
+用C<my()>命名参数列表，同时创建相应的私有变量：
+
 Assigning to a list of private variables to name your arguments:
 
     sub maybeset {
     my($key, $value) = @_;
     $Foo{$key} = $value unless $Foo{$key};
     }
+
+因为赋值的关系，该语句的另一个作用是由传入参数的引用变为传入参数的值。不
+然，函数可以通过修改C<@_>来改变参数的值。
 
 Because the assignment copies the values, this also has the effect
 of turning call-by-reference into call-by-value.  Otherwise a
@@ -152,11 +181,17 @@ its caller's values.
     for (@_) { tr/a-z/A-Z/ }
     }
 
+当然，这样不能修改常量参数。如果参数是字面量，而试图在函数中改变它的话，
+将会出错。例如，以下代码是错误的：
+
 You aren't allowed to modify constants in this way, of course.  If an
 argument were actually literal and you tried to change it, you'd take a
 (presumably fatal) exception.   For example, this won't work:
 
     upcase_in("frederick");
+
+在函数C<upcase_in()>中返回参数的拷贝，而不是直接修改C<@_>，是更安全的做
+法。
 
 It would be much safer if the C<upcase_in()> function
 were written to return a copy of its parameters instead
@@ -169,6 +204,9 @@ of changing them in place:
     for (@parms) { tr/a-z/A-Z/ }
     return wantarray ? @parms : $parms[0];
     }
+
+注意，（没有原型定义的）函数并不关心传给它的是标量或数组。对于函数来说，
+所有的参数都存放在列表C<@_>中。
 
 Notice how this (unprototyped) function doesn't care whether it was
 passed real scalars or arrays.  Perl sees all arguments as one big,
@@ -231,7 +269,7 @@ subroutines as named special code blocks, of which you can have more
 than one in a package, and which you can B<not> call explicitly.  See
 L<perlmod/"BEGIN, CHECK, INIT and END">
 
-=head2 Private Variables via my()
+=head2 用my()声明私有变量
 
 Synopsis:
 
@@ -480,7 +518,7 @@ functions in that same file declared below them, but are inaccessible
 from outside that file.  This strategy is sometimes used in modules
 to create private variables that the whole module can see.
 
-=head2 Temporary Values via local()
+=head2 local()和临时值
 
 B<WARNING>: In general, you should be using C<my> instead of C<local>, because
 it's faster and safer.  Exceptions to this include the global punctuation
