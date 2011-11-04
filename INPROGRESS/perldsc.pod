@@ -1,7 +1,10 @@
-=head1 NAME
+=encoding utf8
+
+=head1 NAME 名称
 X<data structure> X<complex data structure> X<struct>
 
 perldsc - Perl Data Structures Cookbook
+perldec - Perl数据结构手册
 
 =head1 DESCRIPTION
 
@@ -19,6 +22,8 @@ The 5.0 release of Perl let us have complex data structures.  You
 may now write something like this and all of a sudden, you'd have an array
 with three dimensions!
 
+Perl5.0版本开始支持复杂的数据结构。你可以很简单地用下面的代码定义一个三维矩阵。
+
     for $x (1 .. 10) {
 	for $y (1 .. 10) {
 	    for $z (1 .. 10) {
@@ -31,16 +36,22 @@ with three dimensions!
 Alas, however simple this may appear, underneath it's a much more
 elaborate construct than meets the eye!
 
+嗯，看起来很简单吧，但背后的构造很复杂。
+
 How do you print it out?  Why can't you say just C<print @AoA>?  How do
 you sort it?  How can you pass it to a function or get one of these back
 from a function?  Is it an object?  Can you save it to disk to read
 back later?  How do you access whole rows or columns of that matrix?  Do
 all the values have to be numeric?
 
+对于这个数组，我们会有很多疑问。怎么把它打印出来呢，有没有这样的方法呢，你只需要写C<print @AoA>？怎么排序呢？怎么把这个数组传给传给一个函数呢，或者从一个函数返回这样的数组？它是个对象吗？可以把它写入磁盘然后再读出来吗？怎么遍历这个矩阵呢？所有的元素的值都必须是数字类型吗？
+
 As you see, it's quite easy to become confused.  While some small portion
 of the blame for this can be attributed to the reference-based
 implementation, it's really more due to a lack of existing documentation with
 examples designed for the beginner.
+
+你看，这些问题很困惑。有一小部分的指责说是因为它是在引用的基础上实现的，其实更应该归咎于缺少针对新手的文档示例。
 
 This document is meant to be a detailed but understandable treatment of the
 many different sorts of data structures you might want to develop.  It
@@ -48,27 +59,33 @@ should also serve as a cookbook of examples.  That way, when you need to
 create one of these complex data structures, you can just pinch, pilfer, or
 purloin a drop-in example from here.
 
+这篇文档会详细、直观地讲述针对负责数据结构的多种排序方法。它可以作为一本示例参考手册，也就是说，当你需要创建一个复杂的数据结构时，你只需要模仿示例里相应的代码。
+
 Let's look at each of these possible constructs in detail.  There are separate
 sections on each of the following:
 
+让我们来详细地看看下面这些可能的结构吧，有以下几种：
+
 =over 5
 
-=item * arrays of arrays
+=item * arrays of arrays 多维数组
 
-=item * hashes of arrays
+=item * hashes of arrays 哈希数组
 
-=item * arrays of hashes
+=item * arrays of hashes 数组哈希
 
-=item * hashes of hashes
+=item * hashes of hashes 哈希的哈希
 
-=item * more elaborate constructs
+=item * more elaborate constructs 更复杂的结构
 
 =back
 
 But for now, let's look at general issues common to all
 these types of data structures.
 
-=head1 REFERENCES
+现在，让我们先看看常用的数据结构。
+
+=head1 REFERENCES 参考信息
 X<reference> X<dereference> X<dereferencing> X<pointer>
 
 The most important thing to understand about all data structures in
@@ -78,6 +95,8 @@ one-dimensional.  They can hold only scalar values (meaning a string,
 number, or a reference).  They cannot directly contain other arrays or
 hashes, but instead contain I<references> to other arrays or hashes.
 X<multidimensional array> X<array, multidimensional>
+
+最重要的一点，理解Perl的所有数据结构，包括多维数组，看起来它们像多维的，C<@ARRAY>s和C<%HASH>es在内部其实是一维的。
 
 You can't use a reference to an array or hash in quite the same way that you
 would a real array or hash.  For C or C++ programmers unused to
