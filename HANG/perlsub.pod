@@ -50,7 +50,11 @@ generated on the fly using C<eval> or anonymous subroutines.
 You can even call a function indirectly using a variable containing
 its name or a CODE reference.
 
-Perl采用了一种简单的函数调用及其返回值的模型：
+Perl采用了一种简单的函数调用及其返回值的模型：传给函数的参数和函数返回值
+都是一个标量的列表。如果参数或返回值列表中有数组或哈希，数组的元素或哈希
+的键值将会成为列表的一部分，除非传入或返回数组、哈希的引用。参数和返回值
+列表的长度没有限制。（通常没有显式的返回语句的函数被称为子程序，不过从
+Perl的角度来看其实没差）。
 
 The Perl model for function call and return values is simple: all
 functions are passed as parameters one single flat list of scalars, and
@@ -61,6 +65,9 @@ pass-by-reference instead to avoid this.  Both call and return lists may
 contain as many or as few scalar elements as you'd like.  (Often a
 function without an explicit return statement is called a subroutine, but
 there's really no difference from Perl's perspective.)
+
+在函数里，传入的参数被存在数组变量C<@_>里。举例来说，调用函数时传入两个
+参数，那么第一个参数存在C<$_[0]>里，第二个参数存在C<$_[1]>里。
 
 Any arguments passed in show up in the array C<@_>.  Therefore, if
 you called a function with two arguments, those would be stored in
