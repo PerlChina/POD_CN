@@ -206,7 +206,8 @@ of changing them in place:
     }
 
 注意，（没有原型定义的）函数并不关心传给它的是标量或数组。对于函数来说，
-所有的参数都存放在列表C<@_>中。
+所有的参数都存放在列表C<@_>中。这种简单的传参数方式是Perl语言的闪光点。
+函数C<upcase()>不需做任何更改，以下示例没有任何问题：
 
 Notice how this (unprototyped) function doesn't care whether it was
 passed real scalars or arrays.  Perl sees all arguments as one big,
@@ -218,14 +219,21 @@ definition even if we fed it things like this:
     @newlist   = upcase(@list1, @list2);
     @newlist   = upcase( split /:/, $var );
 
+但是，别指望这么做：
+
 Do not, however, be tempted to do this:
 
     (@a, @b)   = upcase(@list1, @list2);
+
+类似扁平的参数列表，函数的返回值列表也是扁平的。因此，以上示例将会把返回
+值存在数组C<@a>里，且置空数组C<@b>。另参考L<引用传参>。
 
 Like the flattened incoming parameter list, the return list is also
 flattened on return.  So all you have managed to do here is stored
 everything in C<@a> and made C<@b> empty.  See 
 L<Pass by Reference> for alternatives.
+
+函数调用可在函数名前显式的加C<&>前缀。
 
 A subroutine may be called using an explicit C<&> prefix.  The
 C<&> is optional in modern Perl, as are parentheses if the
@@ -874,7 +882,7 @@ this operation could on occasion misbehave.
 
 =back
 
-=head2 Pass by Reference
+=head2 引用传递
 
 If you want to pass more than one array or hash into a function--or
 return them from it--and have them maintain their integrity, then
