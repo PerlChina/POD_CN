@@ -6,7 +6,7 @@ X<data structure> X<complex data structure> X<struct>
 perldsc - Perl Data Structures Cookbook
 perldec - Perl数据结构手册
 
-=head1 DESCRIPTION
+=head1 DESCRIPTION 描述
 
 The single feature most sorely lacking in the Perl programming language
 prior to its 5.0 release was complex data structures.  Even without direct
@@ -96,13 +96,15 @@ number, or a reference).  They cannot directly contain other arrays or
 hashes, but instead contain I<references> to other arrays or hashes.
 X<multidimensional array> X<array, multidimensional>
 
-最重要的一点，理解Perl的所有数据结构，包括多维数组，看起来它们像多维的，C<@ARRAY>s和C<%HASH>es在内部其实是一维的。
+最重要的一点，理解Perl的所有数据结构，包括多维数组，看起来它们像多维的，C<@ARRAY>和C<%HASH>在内部其实是一维的。它们只能存储标量（字符串、数字或者引用），它们不能直接存储其他数组或者哈希，但是可以存储其他数组或者哈希的引用（I<references>）。
 
 You can't use a reference to an array or hash in quite the same way that you
 would a real array or hash.  For C or C++ programmers unused to
 distinguishing between arrays and pointers to the same, this can be
 confusing.  If so, just think of it as the difference between a structure
 and a pointer to a structure.
+
+不能像真实的数组或者哈希那样对一个数组或者哈希使用引用，这会让那些不习惯区分数组和指针的C/C++程序员产生困惑。如果困惑的话，它们的区别相当于结构和结构的指针的区别。
 
 You can (and should) read more about references in L<perlref>.
 Briefly, references are rather like pointers that know what they
@@ -115,14 +117,18 @@ level.  It's just that you can I<use> it as though it were a
 two-dimensional one.  This is actually the way almost all C
 multidimensional arrays work as well.
 
-    $array[7][12]			# array of arrays
-    $array[7]{string}			# array of hashes
-    $hash{string}[7]			# hash of arrays
-    $hash{string}{'another string'}	# hash of hashes
+你可以（应该）阅读更多关于引用的文档(L<perlref>)。简而言之，引用类似于知道它指向哪里的指针。（对象也是一种引用，但我们现在不涉及这个。）这意味着当你使用某种东西去访问二维或者多维度数组或者哈希时，真正的操作是一个基本类型，它是一个一维实体，引用下一维度。这跟几乎所有的C多维数组操作方式一样。
+
+    $array[7][12]			# array of arrays 数组的数组
+    $array[7]{string}			# array of hashes 数组的哈希
+    $hash{string}[7]			# hash of arrays 哈希的数组
+    $hash{string}{'another string'}	# hash of hashes 哈希的哈希
 
 Now, because the top level contains only references, if you try to print
 out your array in with a simple print() function, you'll get something
 that doesn't look very nice, like this:
+
+现在，因为最上层只有引用，如果你尝试用一个简单的print()函数打印数组，你会得到一个并不好看的结果，像这样：
 
     @AoA = ( [2, 3], [4, 5, 7], [0] );
     print $AoA[1][2];
@@ -137,13 +143,17 @@ to do this yourself using either prefix typing indicators, like
 C<${$blah}>, C<@{$blah}>, C<@{$blah[$i]}>, or else postfix pointer arrows,
 like C<$a-E<gt>[3]>, C<$h-E<gt>{fred}>, or even C<$ob-E<gt>method()-E<gt>[3]>.
 
-=head1 COMMON MISTAKES
+这是因为Perl不会解析引用的引用。如果你想获取一个引用引用的内容，你需要亲自实现，有两种方法，一种是使用前缀类型指示符，像C<${$blah}>，C<@{$blah}>，C<@{$blah[$i]}>，另一种是后缀类型指示箭头，像C<$a-E<gt>[3]>，C<$h-E<gt>{fred}>，甚至这样C<$ob-E<gt>method()-E<gt>[3]>。
+
+=head1 COMMON MISTAKES 常见错误
 
 The two most common mistakes made in constructing something like
 an array of arrays is either accidentally counting the number of
 elements or else taking a reference to the same memory location
 repeatedly.  Here's the case where you just get the count instead
 of a nested array:
+
+构造类似于数组的数组这样的结构时，有两种错误最常见：一种错误是悲剧地计算数组元素个数，另一种错误是重复地引用同一个内存地址。下面这个例子得到的结果是数组元素个数而不是嵌套数组。
 
     for $i (1..10) {
 	@array = somefunc($i);
@@ -154,6 +164,8 @@ That's just the simple case of assigning an array to a scalar and getting
 its element count.  If that's what you really and truly want, then you
 might do well to consider being a tad more explicit about it, like this:
 
+上面是一个简答的示例，把数组赋值给标量，得到数组元素的个数。如果这是你真正想要的结果，你可以这么写，更容易理解。
+
     for $i (1..10) {
 	@array = somefunc($i);
 	$counts[$i] = scalar @array;
@@ -161,6 +173,8 @@ might do well to consider being a tad more explicit about it, like this:
 
 Here's the case of taking a reference to the same memory location
 again and again:
+
+接下来的示例，重复地把一个引用指向同一个内存地址。
 
     for $i (1..10) {
 	@array = somefunc($i);
@@ -171,10 +185,14 @@ So, what's the big problem with that?  It looks right, doesn't it?
 After all, I just told you that you need an array of references, so by
 golly, you've made me one!
 
+这会有什么问题呢？它看起来没问题，不是吗？操，我跟你说你需要构造一个数组引用数组，你引用的是同一个数组！
+
 Unfortunately, while this is true, it's still broken.  All the references
 in @AoA refer to the I<very same place>, and they will therefore all hold
 whatever was last in @array!  It's similar to the problem demonstrated in
 the following C program:
+
+不幸地是，这是真的，这个数组被破坏了。数组@AoA里的所有引用都指向I<同一个地方>，因此引用的都是最后一个@array。这跟下面的C代码犯的错误相似：
 
     #include <pwd.h>
     main() {
@@ -188,6 +206,8 @@ the following C program:
 
 Which will print
 
+打印的结果是
+
     daemon name is daemon
     root name is daemon
 
@@ -196,6 +216,9 @@ in memory!  In C, you'd have to remember to malloc() yourself some new
 memory.  In Perl, you'll want to use the array constructor C<[]> or the
 hash constructor C<{}> instead.   Here's the right way to do the preceding
 broken code fragments:
+
+
+
 X<[]> X<{}>
 
     for $i (1..10) {
