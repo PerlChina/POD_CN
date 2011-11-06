@@ -680,12 +680,22 @@ also quite flexible. Over the years, many people have developed systems
 which build on top of Perl's built-in system to provide more features
 and convenience.
 
+就像前面所说一样，Perl内置的OO系统非常小巧，也相当灵活。这些年来，在Perl
+的内置系统上面，人们开发了许多高级系统，用以提供更多的特性和便利。
+
 We strongly recommend that you use one of these systems. Even the most
 minimal of them eliminates a lot of repetitive boilerplate. There's
 really no good reason to write your classes from scratch in Perl.
 
+我们强烈推荐你使用这些系统中的一个。它们之中即使是最轻巧的都能简化许多重
+复工作。没有任何理由从零开始用Perl构建你的类。
+
 If you are interested in the guts underlying these systems, check out
 L<perlobj>.
+
+如果你对这些系统的内部实现感兴趣，请参阅L<perlobj>
+
+=head2 Moose
 
 =head2 Moose
 
@@ -693,12 +703,21 @@ L<Moose> bills itself as a "postmodern object system for Perl 5". Don't
 be scared, the "postmodern" label is a callback to Larry's description
 of Perl as "the first postmodern computer language".
 
+L<Moose>自称为“Perl 5的后现代对象系统”。不要被吓到，“后现代”一词出现
+在这里，只是对Larry将Perl称作“第一种后现代计算机语言”的呼应。
+
 C<Moose> provides a complete, modern OO system. Its biggest influence
 is the Common Lisp Object System, but it also borrows ideas from
 Smalltalk and several other languages. C<Moose> was created by Stevan
 Little, and draws heavily from his work on the Perl 6 OO design.
 
+C<Moose>提供了一个完全而现代的OO系统。对它影响最大的是Common Lisp的面向
+对象系统，同时它也借鉴了Smalltalk和许多其他编程语言的理念。C<Moose>由
+Stevan Little创建，从他对Perl 6 OO的设计工作中获益良多。
+
 Here is our C<File> class using C<Moose>:
+
+这是我们使用C<Moose>的C<File>类
 
   package File;
   use Moose;
@@ -715,9 +734,13 @@ Here is our C<File> class using C<Moose>:
 
 C<Moose> provides a number of features:
 
+C<Moose>提供了许多特性：
+
 =over 4
 
 =item * Declarative sugar
+
+=item * 声明式的语法糖
 
 C<Moose> provides a layer of declarative "sugar" for defining classes.
 That sugar is just a set of exported functions that make declaring how
@@ -725,15 +748,26 @@ your class works simpler and more palatable.  This lets you describe
 I<what> your class is, rather than having to tell Perl I<how> to
 implement your class.
 
+C<Moose>提供了一层声明式的语法糖，用来定义类。这些语法糖只是一系列导出的
+函数，它们可以使定义你的类的工作变得更加简单和更具可移植性。你可以描述你
+的类是什么，而不用去告诉Perl怎样实现它。
+
 The C<has()> subroutine declares an attribute, and C<Moose>
 automatically creates accessors for these attributes. It also takes
 care of creating a C<new()> method for you. This constructor knows
 about the attributes you declared, so you can set them when creating a
 new C<File>.
 
+C<has()>子函数定义了一个属性，Moose会自动为属性创建存取器。它还帮你创建
+了C<new()>方法。这个构造器知道你所定义的属性，所以你能够在创建一个
+C<File>对象时给它们赋值。
+
 =item * Roles built-in
 
+=item * 内置角色
+
 C<Moose> lets you define roles the same way you define classes:
+C<Moose>让你像定义类一样定义角色
 
   package HasOnOfSwitch;
   use Moose::Role;
@@ -755,12 +789,21 @@ C<Moose> lets you define roles the same way you define classes:
 
 =item * A miniature type system
 
+=item * 一个小型的类型系统
+
 In the example above, you can see that we passed C<< isa => 'Bool' >>
 to C<has()> when creating our C<is_on> attribute. This tells C<Moose>
 that this attribute must be a boolean value. If we try to set it to an
 invalid value, our code will throw an error.
 
+在上面的例子中，在创建C<is_on>属性的时候，我们给C<has()>传递了参数C<<
+isa => 'Bool' >>。这是在告诉C<Moose>，这个属性必须是一个布尔值。如果我们
+给它设置非法值，代码会抛出错误。
+
+
 =item * Full introspection and manipulation
+
+=item * 完全的内省和控制机制
 
 Perl's built-in introspection features are fairly minimal. C<Moose>
 builds on top of them and creates a full introspection layer for your
@@ -768,42 +811,76 @@ classes. This lets you ask questions like "what methods does the File
 class implement?" It also lets you modify your classes
 programmatically.
 
+Perl的内置内省特性及其微小。C<Moose>在它之上，为你的类建立了一个完全的内
+省层，使得你可以问诸如“File类实现了那些方法？”之类的问题。它还可以让你
+按计划的修改你的类???。
+
 =item * Self-hosted and extensible
+
+=item * 自宿主(Self-hosted)和可扩展
 
 C<Moose> describes itself using its own introspection API. Besides
 being a cool trick, this means that you can extend C<Moose> using
 C<Moose> itself.
 
+C<Moose>使用自己的内省API描述自己。除了这是一个很酷的技巧外，它还意味着
+你可以用C<Moose>来扩展C<Moose>。
+
 =item * Rich ecosystem
+
+=item * 丰富的生态系统
 
 There is a rich ecosystem of C<Moose> extensions on CPAN under the
 L<MooseX|http://search.cpan.org/search?query=MooseX&mode=dist>
 namespace. In addition, many modules on CPAN already use C<Moose>,
 providing you with lots of examples to learn from.
 
+在CPANS上的
+L<MooseX|http://search.cpan.org/search?query=MooseX&mode=dist>命名空间
+下，有一个关于Moose扩展的丰富的生态系统。此外，CPAN上很多模块已经在使用
+C<Moose>，提供了许多可供学习的例子。
+
 =item * Many more features
+
+=item * 更多特性
 
 C<Moose> is a very powerful tool, and we can't cover all of its
 features here. We encourage you to learn more by reading the C<Moose>
 documentation, starting with
 L<Moose::Manual|http://search.cpan.org/perldoc?Moose::Manual>.
 
+C<Moose>是一个非常强大的工具，我们不能在这里介绍它全部的特性。我们鼓励你
+通过阅读C<Moose>的文档来学习它，从
+L<Moose::Manual|http://search.cpan.org/perldoc?Moose::Manual>开始。
+
 =back
 
 Of course, C<Moose> isn't perfect.
+
+当然，C<Moose>也不是完美的。
 
 C<Moose> can make your code slower to load. C<Moose> itself is not
 small, and it does a I<lot> of code generation when you define your
 class. This code generation means that your runtime code is as fast as
 it can be, but you pay for this when your modules are first loaded.
 
+C<Moose>会使你的代码载入时间变慢。C<Moose>不是一个小型系统，当你定义你的
+类时，它做了I<许多>代码生成工作。这意味着你的代码在运行期间能尽可能的快
+，但在你的模块第一次被载入时，你必须付出一些时间代价。
+
 This load time hit can be a problem when startup speed is important,
 such as with a command-line script or a "plain vanilla" CGI script that
 must be loaded each time it is executed.
 
+这个载入时间在启动速度重要的时候会成为一个问题。比如命令行脚本，或者必须
+在每次执行都被载入的纯CGI脚本。
+
 Before you panic, know that many people do use C<Moose> for
 command-line tools and other startup-sensitive code. We encourage you
 to try C<Moose> out first before worrying about startup speed.
+
+不过先别慌，许多人的确在写命令行工具和其他对启动时间敏感的代码中使用了
+C<Moose>。我们鼓励你先试用一下C<Moose>，然后再考虑启动速度的问题。
 
 C<Moose> also has several dependencies on other modules. Most of these
 are small stand-alone modules, a number of which have been spun off
@@ -811,6 +888,11 @@ from C<Moose>. C<Moose> itself, and some of its dependencies, require a
 compiler. If you need to install your software on a system without a
 compiler, or if having I<any> dependencies is a problem, then C<Moose>
 may not be right for you.
+
+C<Moose>还有很多其他模块的依赖关系，其中大部分都是小型的独立模块，还有一
+部分是为了C<Moose>而写的。C<Moose>本身，以及它的一些依赖模块需要用到编译
+器。如果你想将你的软件安装在一个没有编译器的系统上面，或者有I<任何>依赖关
+系都是问题，那么C<Moose>可能不适合你。
 
 =head3 Mouse
 
@@ -821,34 +903,60 @@ package. For all features that it does implement, the end-user API is
 I<identical> to C<Moose>, meaning you can switch from C<Mouse> to
 C<Moose> quite easily.
 
+如果你使用了C<Moose>之后，发现这些问题之一妨碍你继续使用C<Moose>，我们建
+议你接下来考虑一下C<Mouse>。C<Mouse>用一个更简单的包，实现了C<Moose>功能
+的一个子集。对于它所实现的所有特性，其接口和C<Moose>是I<完全相同的>，这
+意味着你可以非常容易的从C<Moose>移植到C<Mouse>
+
 C<Mouse> does not implement most of C<Moose>'s introspection API, so
 it's often faster when loading your modules. Additionally, all of its
 I<required> dependencies ship with the Perl core, and it can run
 without a compiler. If you do have a compiler, C<Mouse> will use it to
 compile some of its code for a speed boost.
 
+C<Mouse>没有实现大部分C<Moose>的内省接口，所以在载入你的模块时，它的速度
+更快。同时，它的所有依赖模块都由Perl核心提供，不需要编译器就能运行。如果
+你有编译器，那么C<Mouse>会用它来编译一些代码，用来加快速度。
+
 Finally, it ships with a C<Mouse::Tiny> module that takes most of
 C<Mouse>'s features and bundles them up in a single module file. You
 can copy this module file into your application's library directory for
 easy bundling.
 
+最后，它还包括了一个C<Mouse::Tiny>模块，这个模块中包含了大部分C<Mouse>的
+特性，并将其打包到了一个模块文件里面。把这个文件拷贝到你应用的库目录，你
+就可以轻易地将其打包。
+
 The C<Moose> authors hope that one day C<Mouse> can be made obsolete by
 improving C<Moose> enough, but for now it provides a worthwhile
 alternative to C<Moose>.
+
+C<Moose>的作者希望通过充分改进C<Moose>，使C<Mouse>终有一天能够过时，但现
+在C<Mouse>仍然提供了除C<Moose>之外的一个有价值的选择。
 
 =head2 Class::Accessor
 
 L<Class::Accessor> is the polar opposite of C<Moose>. It provides very
 few features, nor is it self-hosting.
 
+L<Class::Accessor>完全和C<Moose>相反。它提供了很少的特性，也不是自宿主的
+。
+
 It is, however, very simple, pure Perl, and it has no non-core
 dependencies. It also provides a "Moose-like" API on demand for the
 features it supports.
 
+但它非常简单，完全由Perl实现，没有非核心依赖，同时还提供了“类Moose”的
+借口。
+
 Even though it doesn't do much, it is still preferable to writing your
 own classes from scratch.
 
+尽管做的不多，它仍然比你从头开始写你的类好。
+
 Here's our C<File> class with C<Class::Accessor>:
+
+这是用C<Class::Accessor>实现的C<File>类：
 
   package File;
   use Class::Accessor 'antlers';
@@ -863,6 +971,7 @@ Here's our C<File> class with C<Class::Accessor>:
       print "This file is at ", $self->path, "\n";
   }
 
+
 The C<antlers> import flag tells C<Class::Accessor> that you want to
 define your attributes using C<Moose>-like syntax. The only parameter
 that you can pass to C<has> is C<is>. We recommend that you use this
@@ -870,17 +979,30 @@ Moose-like syntax if you choose C<Class::Accessor> since it means you
 will have a smoother upgrade path if you later decide to move to
 C<Moose>.
 
+C<antlers>导入符告诉C<Class::Accessor>我们想用类C<Moose>的语法定义属性。
+你唯一可以传给C<has>的参数是C<is>。当你使用C<Class::Accessor>时，我推荐
+你使用类Moose的语法，这意味着当你之后决定使用C<Moose>时，你可以更平滑的
+升级。
+
 Like C<Moose>, C<Class::Accessor> generates accessor methods and a
 constructor for your class.
 
+像C<Moose>一样，C<Class::Accessor>为类自动创建构造器和存取器。
+
 =head2 Object::Tiny
+
 
 Finally, we have L<Object::Tiny>. This module truly lives up to its
 name. It has an incredibly minimal API and absolutely no dependencies
 (core or not). Still, we think it's a lot easier to use than writing
 your own OO code from scratch.
 
+最后介绍C<Object::Tiny>。这个模块就如它的名字，完全没有依赖关系且借口及
+其简单。但我们仍然认为比起自己写你的OO代码，使用这个模块更加简单。
+
 Here's our C<File> class once more:
+
+再一次，这是我们的C<File>类：
 
   package File;
   use Object::Tiny qw( path content last_mod_time );
@@ -892,9 +1014,13 @@ Here's our C<File> class once more:
   }
 
 That's it!
+这就够了!
 
 With C<Object::Tiny>, all accessors are read-only. It generates a
 constructor for you, as well as the accessors you define.
+
+使用C<Object::Tiny>，所有的存取器都是只读的。它为你类生成构造器，也为你
+定义的属性生成存取器。
 
 =head2 Role::Tiny
 
@@ -904,15 +1030,27 @@ Moose, it comes with a full-fledged role implementation. However, if
 you use one of our other recommended OO modules, you can still use
 roles with L<Role::Tiny>
 
+我们前面提过，角色提供了继承之外的另外一个选择，但Perl没有内置的角色支持
+。如果你选择使用Moose，它提供了一个成熟的角色实现。如果你使用其他我们推
+荐的OO模块，你仍然可以通过L<Role::Tiny>使用角色。
+
 C<Role::Tiny> provides some of the same features as Moose's role
 system, but in a much smaller package. Most notably, it doesn't support
 any sort of attribute declaration, so you have to do that by hand.
 Still, it's useful, and works well with C<Class::Accessor> and
 C<Object::Tiny>
 
+C<Role::Tiny>提供了一些Moose角色系统的特性，但它更加小巧。值得注意的是，
+它不支持任何属性定义，所以你必须手动定义它们。但它任然十分有用，并且和
+C<Class::Accessor>或C<Object::Tiny>在一起工作得很好。
+
 =head2 OO System Summary
 
+=head2 OO系统总结
+
 Here's a brief recap of the options we covered:
+
+这是一个我们提到的选择的一个简单回顾
 
 =over 4
 
@@ -923,6 +1061,10 @@ ecosystem, and a thriving user base. We also covered L<Mouse> briefly.
 C<Mouse> is C<Moose> lite, and a reasonable alternative when Moose
 doesn't work for your application.
 
+C<Moose>是最好选择。它提供了许多特性，强大的生态系统，大量的用户基础。我
+们也简单的提到了C<Mouse>，它是C<Moose>的简化版，也是当Moose不适合于你的
+应用的时候的一个合理选择。
+
 =item * L<Class::Accessor>
 
 C<Class::Accessor> does a lot less than C<Moose>, and is a nice
@@ -931,6 +1073,11 @@ time and is well battle-tested. It also has a minimal C<Moose>
 compatibility mode which makes moving from C<Class::Accessor> to
 C<Moose> easy.
 
+C<Class::Accessor>做得比C<Moose>少许多，如果你发现Moose太重量级了，它是
+一个很好的选择。这个模块已经存在了相当长时间，而且也通过了很好的测试。它
+还提供了一个轻量的C<Moose>兼容接口，这使得从C<Class::Accessor>迁移到
+C<Moose>非常简单。
+
 =item * L<Object::Tiny>
 
 C<Object::Tiny> is the absolute minimal option. It has no dependencies,
@@ -938,40 +1085,69 @@ and almost no syntax to learn. It's a good option for a super minimal
 environment and for throwing something together quickly without having
 to worry about details.
 
+C<Object::Tiny>绝对是最后的选择。它没有任何依赖，不需要学习任何语法。当
+你需要一个超级简单的环境，并且不需要考虑细节的将一些东西捏合起来时，它是
+一个不错的选择。
+
 =item * L<Role::Tiny>
 
 Use C<Role::Tiny> with C<Class::Accessor> or C<Object::Tiny> if you
 find yourself considering multiple inheritance. If you go with
 C<Moose>, it comes with its own role implementation.
 
+如果你发现自己在考虑多重继承的时候，组合使用C<Role::Tiny>和
+C<Class::Accessor>或C<Object::Tiny>。如果你使用C<Moose>，它提供了自己的
+角色实现。
+
 =back
 
 =head2 Other OO Systems
 
+=head2 其他OO系统
+
 There are literally dozens of other OO-related modules on CPAN besides
-those covered here, and you're likely to run across one or more of them
+those covered here, and you're likely to run accross one or more of them
 if you work with other people's code.
+
+除了这里提到的OO系统外，CPAN上还有成堆的相关模块。当你在使用别人的代码时
+，很有可能就会碰到它们。
 
 In addition, plenty of code in the wild does all of its OO "by hand",
 using just the Perl built-in OO features. If you need to maintain such
 code, you should read L<perlobj> to understand exactly how Perl's
 built-in OO works.
 
+其次，还有许多代码使用Perl的内置OO特性“手动”的实现它自己的OO。如果你需
+要维护这种代码，你必须阅读L<perlobj>，理解Perl的内置OO是如何工作的。
+
 =head1 CONCLUSION
+
+=head1 总结
 
 As we said before, Perl's minimal OO system has lead to a flourishing
 of OO systems on CPAN. While you can still drop down to the bare metal
 and write your classes by hand, there's really no reason to do that in
 2011.
 
+就像我们前面所说，Perl轻量的OO系统使得CPAN上面存在大量的OO模块。尽管你
+仍然可以选择自己手动编写你的类，但现在，2011，你没有任何理由要去那样做。
+
 For small systems, L<Object::Tiny> and L<Class::Accessor> both provide
 minimal object systems that take care of basic boilerplate for you.
+
+对于小项目，L<Object::Tiny>和L<Class::Accessor>都提供了一个轻量的对象系
+统，能够解决你的基本问题。
 
 For bigger projects, L<Moose> provides a rich set of features that will
 let you focus on implementing your business logic.
 
+对于更大的项目，L<Moose>提供了丰富的特性，使你能够关注在逻辑层面上。
+
 We encourage you to play with and evaluate L<Moose>,
 L<Class::Accessor>, and L<Object::Tiny> to see which OO system is right
 for you.
+
+我们鼓励你使用并测试这些模块，L<Moose>，L<Class::Accessor>，
+L<Object::Tiny>，然后再看哪个适合于你。
 
 =cut
