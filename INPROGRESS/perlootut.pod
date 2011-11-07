@@ -1164,4 +1164,8 @@ for you.
 我们鼓励你使用并测试这些模块，L<Moose>，L<Class::Accessor>，
 L<Object::Tiny>，然后再看哪个适合于你。
 
+=head1 TRANSLATORS
+
+woosley. xu.<woosley.xu@gmail.com>
+
 =cut
