@@ -1167,6 +1167,6 @@ L<Object::Tiny>，然后再决定哪个适合于你。
 
 =head1 TRANSLATORS
 
-woosley. xu.<woosley.xu@gmail.com>
+Woosley Xu C<woosley.xu@gmail.com>
 
 =cut
