@@ -217,7 +217,7 @@ memory.  In Perl, you'll want to use the array constructor C<[]> or the
 hash constructor C<{}> instead.   Here's the right way to do the preceding
 broken code fragments:
 
-
+问题在于两个指针C<rp>和C<dp>同时指向了内存里的同一个地址。在C语言里，你必须记住使用maollc()申请一个新的内存块。在Perl语言里，你可以使用数组构造C<[]>或者哈希构造C<{}>。下面才是正确的方法。
 
 X<[]> X<{}>
 
@@ -230,8 +230,12 @@ The square brackets make a reference to a new array with a I<copy>
 of what's in @array at the time of the assignment.  This is what
 you want.
 
+用方括号构造一个引用，指向一个新的数组，把@array通过I<复制>赋值给新数组。这才是你真正想要的。
+
 Note that this will produce something similar, but it's
 much harder to read:
+
+注意下面的代码是相似的，但是理解起来会有难度：
 
     for $i (1..10) {
 	@array = 0 .. $i;
@@ -246,6 +250,8 @@ dereference on the left-hand-side of the assignment.  It all depends on
 whether C<$AoA[$i]> had been undefined to start with, or whether it
 already contained a reference.  If you had already populated @AoA with
 references, as in
+
+真的是一样吗？呃，可能吧，也可能不是。
 
     $AoA[3] = \@another_array;
 
@@ -345,7 +351,7 @@ variable, and it would thereby remind you to write instead:
 
     print $aref->[2][2]
 
-=head1 DEBUGGING
+=head1 DEBUGGING 调试
 X<data structure, debugging> X<complex data structure, debugging>
 X<AoA, debugging> X<HoA, debugging> X<AoH, debugging> X<HoH, debugging>
 X<array of arrays, debugging> X<hash of arrays, debugging>
@@ -356,6 +362,8 @@ printing out complex data structures.  With 5.002 or above, the
 debugger includes several new features, including command line editing as
 well as the C<x> command to dump out complex data structures.  For
 example, given the assignment to $AoA above, here's the debugger output:
+
+在版本5.002之前，标准Perl调试器打印复杂的数据结构做的不好。在版本5.002或者以上，调试器增加了几个新特性，包括命令行编辑和C<x>命令，输出复杂数据结构的值。例如，假定上面赋值给$AoA，以下是调试器的输出：
 
     DB<1> x $AoA
     $AoA = ARRAY(0x13b5a0)
@@ -376,16 +384,18 @@ example, given the assignment to $AoA above, here's the debugger output:
 	  2  'elroy'
 	  3  'judy'
 
-=head1 CODE EXAMPLES
+=head1 CODE EXAMPLES 示例代码
 
 Presented with little comment (these will get their own manpages someday)
 here are short code examples illustrating access of various
 types of data structures.
 
-=head1 ARRAYS OF ARRAYS
+示例代码有少量注释（将来有一天这些会有它们自己的手册）。现在用很短的代码来演示访问不同类型的数据结构。
+
+=head1 ARRAYS OF ARRAYS 多维数组
 X<array of arrays> X<AoA>
 
-=head2 Declaration of an ARRAY OF ARRAYS
+=head2 Declaration of an ARRAY OF ARRAYS 声明多维数组
 
  @AoA = (
         [ "fred", "barney" ],
@@ -393,56 +403,56 @@ X<array of arrays> X<AoA>
         [ "homer", "marge", "bart" ],
       );
 
-=head2 Generation of an ARRAY OF ARRAYS
+=head2 Generation of an ARRAY OF ARRAYS 构造多维数组
 
- # reading from file
+ # reading from file 从文件逐行读取
  while ( <> ) {
      push @AoA, [ split ];
  }
 
- # calling a function
+ # calling a function 调用函数
  for $i ( 1 .. 10 ) {
      $AoA[$i] = [ somefunc($i) ];
  }
 
- # using temp vars
+ # using temp vars 使用临时变量
  for $i ( 1 .. 10 ) {
      @tmp = somefunc($i);
      $AoA[$i] = [ @tmp ];
  }
 
- # add to an existing row
+ # add to an existing row 向已经存在的多维数组添加新元素
  push @{ $AoA[0] }, "wilma", "betty";
 
-=head2 Access and Printing of an ARRAY OF ARRAYS
+=head2 Access and Printing of an ARRAY OF ARRAYS 访问并打印多维数组
 
- # one element
+ # one element 给一个元素赋值
  $AoA[0][0] = "Fred";
 
- # another element
+ # another element 把另一个元素里的单词变成大写
  $AoA[1][1] =~ s/(\w)/\u$1/;
 
- # print the whole thing with refs
+ # print the whole thing with refs 用引用打印两维数组的全部元素
  for $aref ( @AoA ) {
      print "\t [ @$aref ],\n";
  }
 
- # print the whole thing with indices
+ # print the whole thing with indices 用索引打印两维数组的全部元素
  for $i ( 0 .. $#AoA ) {
      print "\t [ @{$AoA[$i]} ],\n";
  }
 
- # print the whole thing one at a time
+ # print the whole thing one at a time 打印所有元素，一次打印一个元素
  for $i ( 0 .. $#AoA ) {
      for $j ( 0 .. $#{ $AoA[$i] } ) {
          print "elt $i $j is $AoA[$i][$j]\n";
      }
  }
 
-=head1 HASHES OF ARRAYS
+=head1 HASHES OF ARRAYS 哈希数组
 X<hash of arrays> X<HoA>
 
-=head2 Declaration of a HASH OF ARRAYS
+=head2 Declaration of a HASH OF ARRAYS 声明哈希数组
 
  %HoA = (
         flintstones        => [ "fred", "barney" ],
@@ -450,16 +460,16 @@ X<hash of arrays> X<HoA>
         simpsons           => [ "homer", "marge", "bart" ],
       );
 
-=head2 Generation of a HASH OF ARRAYS
+=head2 Generation of a HASH OF ARRAYS 构造哈希数组
 
- # reading from file
+ # reading from file 读取文件，每行格式为A：B C D E，用冒号分割，前面是key，后面用空格分割，多个元素作为value
  # flintstones: fred barney wilma dino
  while ( <> ) {
      next unless s/^(.*?):\s*//;
      $HoA{$1} = [ split ];
  }
 
- # reading from file; more temps
+ # reading from file; more temps 读取同一个文件，使用更多临时变量
  # flintstones: fred barney wilma dino
  while ( $line = <> ) {
      ($who, $rest) = split /:\s*/, $line, 2;
@@ -467,34 +477,34 @@ X<hash of arrays> X<HoA>
      $HoA{$who} = [ @fields ];
  }
 
- # calling a function that returns a list
+ # calling a function that returns a list 调用函数，返回列表
  for $group ( "simpsons", "jetsons", "flintstones" ) {
      $HoA{$group} = [ get_family($group) ];
  }
 
- # likewise, but using temps
+ # likewise, but using temps 类似，但使用了临时变量
  for $group ( "simpsons", "jetsons", "flintstones" ) {
      @members = get_family($group);
      $HoA{$group} = [ @members ];
  }
 
- # append new members to an existing family
+ # append new members to an existing family 向已有的多维数组追加元素
  push @{ $HoA{"flintstones"} }, "wilma", "betty";
 
-=head2 Access and Printing of a HASH OF ARRAYS
+=head2 Access and Printing of a HASH OF ARRAYS 访问和打印哈希数组
 
- # one element
+ # one element 访问一个元素
  $HoA{flintstones}[0] = "Fred";
 
- # another element
+ # another element 替换另一个元素的值
  $HoA{simpsons}[1] =~ s/(\w)/\u$1/;
 
- # print the whole thing
+ # print the whole thing 打印全部
  foreach $family ( keys %HoA ) {
      print "$family: @{ $HoA{$family} }\n"
  }
 
- # print the whole thing with indices
+ # print the whole thing with indices 使用索引打印全部
  foreach $family ( keys %HoA ) {
      print "family: ";
      foreach $i ( 0 .. $#{ $HoA{$family} } ) {
@@ -503,12 +513,12 @@ X<hash of arrays> X<HoA>
      print "\n";
  }
 
- # print the whole thing sorted by number of members
+ # print the whole thing sorted by number of members （按value数组元素个数从大到小）排序并打印
  foreach $family ( sort { @{$HoA{$b}} <=> @{$HoA{$a}} } keys %HoA ) {
      print "$family: @{ $HoA{$family} }\n"
  }
 
- # print the whole thing sorted by number of members and name
+ # print the whole thing sorted by number of members and name （按value数组元素个数从大到小或者key字符升序）排序并打印
  foreach $family ( sort {
 			    @{$HoA{$b}} <=> @{$HoA{$a}}
 					||
@@ -518,10 +528,10 @@ X<hash of arrays> X<HoA>
      print "$family: ", join(", ", sort @{ $HoA{$family} }), "\n";
  }
 
-=head1 ARRAYS OF HASHES
+=head1 ARRAYS OF HASHES 数组哈希
 X<array of hashes> X<AoH>
 
-=head2 Declaration of an ARRAY OF HASHES
+=head2 Declaration of an ARRAY OF HASHES 声明数组哈希
 
  @AoH = (
         {
@@ -540,9 +550,9 @@ X<array of hashes> X<AoH>
         }
   );
 
-=head2 Generation of an ARRAY OF HASHES
+=head2 Generation of an ARRAY OF HASHES 构造数组哈希
 
- # reading from file
+ # reading from file 读取文件，每行格式为k1=v1 k2=v2
  # format: LEAD=fred FRIEND=barney
  while ( <> ) {
      $rec = {};
@@ -554,37 +564,37 @@ X<array of hashes> X<AoH>
  }
 
 
- # reading from file
+ # reading from file 读取文件，没有使用临时变量，用的是环境变量$_
  # format: LEAD=fred FRIEND=barney
  # no temp
  while ( <> ) {
      push @AoH, { split /[\s+=]/ };
  }
 
- # calling a function  that returns a key/value pair list, like
+ # calling a function  that returns a key/value pair list, like 调用函数，返回哈希（key/value）结构，例如lead:fred,daughter:pebbles
  # "lead","fred","daughter","pebbles"
  while ( %fields = getnextpairset() ) {
      push @AoH, { %fields };
  }
 
- # likewise, but using no temp vars
+ # likewise, but using no temp vars 类似的，但没有使用临时变量
  while (<>) {
      push @AoH, { parsepairs($_) };
  }
 
- # add key/value to an element
+ # add key/value to an element 向一个数组元素增加key/value
  $AoH[0]{pet} = "dino";
  $AoH[2]{pet} = "santa's little helper";
 
-=head2 Access and Printing of an ARRAY OF HASHES
+=head2 Access and Printing of an ARRAY OF HASHES 访问和打印数组哈希
 
- # one element
+ # one element 给数组元素的一个key赋值
  $AoH[0]{lead} = "fred";
 
- # another element
+ # another element 正则替换数组元素的key的值
  $AoH[1]{lead} =~ s/(\w)/\u$1/;
 
- # print the whole thing with refs
+ # print the whole thing with refs 使用引用打印全部
  for $href ( @AoH ) {
      print "{ ";
      for $role ( keys %$href ) {
@@ -593,7 +603,7 @@ X<array of hashes> X<AoH>
      print "}\n";
  }
 
- # print the whole thing with indices
+ # print the whole thing with indices 使用索引打印全部
  for $i ( 0 .. $#AoH ) {
      print "$i is { ";
      for $role ( keys %{ $AoH[$i] } ) {
@@ -602,17 +612,17 @@ X<array of hashes> X<AoH>
      print "}\n";
  }
 
- # print the whole thing one at a time
+ # print the whole thing one at a time 打印全部，一次一个key/value
  for $i ( 0 .. $#AoH ) {
      for $role ( keys %{ $AoH[$i] } ) {
          print "elt $i $role is $AoH[$i]{$role}\n";
      }
  }
 
-=head1 HASHES OF HASHES
+=head1 HASHES OF HASHES 哈希的哈希
 X<hash of hashes> X<HoH>
 
-=head2 Declaration of a HASH OF HASHES
+=head2 Declaration of a HASH OF HASHES 声明哈希哈希
 
  %HoH = (
         flintstones => {
@@ -631,9 +641,9 @@ X<hash of hashes> X<HoH>
 	},
  );
 
-=head2 Generation of a HASH OF HASHES
+=head2 Generation of a HASH OF HASHES 构造哈希哈希value
 
- # reading from file
+ # reading from file 从文件逐行读取，按冒号分割取出第一级的key和value，按空格分割value取出subkey=subvalue，然后按“=”分割取subkey和subvalue。
  # flintstones: lead=fred pal=barney wife=wilma pet=dino
  while ( <> ) {
      next unless s/^(.*?):\s*//;
@@ -644,7 +654,7 @@ X<hash of hashes> X<HoH>
      }
 
 
- # reading from file; more temps
+ # reading from file; more temps 从文件读取，用了更多临时变量
  while ( <> ) {
      next unless s/^(.*?):\s*//;
      $who = $1;
@@ -656,18 +666,18 @@ X<hash of hashes> X<HoH>
      }
  }
 
- # calling a function  that returns a key,value hash
+ # calling a function  that returns a key,value hash 调用函数，返回哈希。
  for $group ( "simpsons", "jetsons", "flintstones" ) {
      $HoH{$group} = { get_family($group) };
  }
 
- # likewise, but using temps
+ # likewise, but using temps 跟上面类似，没有使用临时变量
  for $group ( "simpsons", "jetsons", "flintstones" ) {
      %members = get_family($group);
      $HoH{$group} = { %members };
  }
 
- # append new members to an existing family
+ # append new members to an existing family 先给哈希赋值，然后向这个哈希增加成员
  %new_folks = (
      wife => "wilma",
      pet  => "dino",
@@ -677,15 +687,15 @@ X<hash of hashes> X<HoH>
      $HoH{flintstones}{$what} = $new_folks{$what};
  }
 
-=head2 Access and Printing of a HASH OF HASHES
+=head2 Access and Printing of a HASH OF HASHES 访问和打印哈希哈希
 
- # one element
+ # one element 给一个key的subkey赋值
  $HoH{flintstones}{wife} = "wilma";
 
- # another element
+ # another element 正则替换一个key的subkey的值
  $HoH{simpsons}{lead} =~ s/(\w)/\u$1/;
 
- # print the whole thing
+ # print the whole thing 打印全部 key: { subkey= subvalue }
  foreach $family ( keys %HoH ) {
      print "$family: { ";
      for $role ( keys %{ $HoH{$family} } ) {
@@ -694,7 +704,7 @@ X<hash of hashes> X<HoH>
      print "}\n";
  }
 
- # print the whole thing  somewhat sorted
+ # print the whole thing  somewhat sorted 按默认排序（quicksort）打印
  foreach $family ( sort keys %HoH ) {
      print "$family: { ";
      for $role ( sort keys %{ $HoH{$family} } ) {
@@ -704,7 +714,7 @@ X<hash of hashes> X<HoH>
  }
 
 
- # print the whole thing sorted by number of members
+ # print the whole thing sorted by number of members 按成员的成员数量降序打印
  foreach $family ( sort { keys %{$HoH{$b}} <=> keys %{$HoH{$a}} } keys %HoH ) {
      print "$family: { ";
      for $role ( sort keys %{ $HoH{$family} } ) {
@@ -713,14 +723,14 @@ X<hash of hashes> X<HoH>
      print "}\n";
  }
 
- # establish a sort order (rank) for each role
+ # establish a sort order (rank) for each role 为每种角色打分排序
  $i = 0;
  for ( qw(lead wife son daughter pal pet) ) { $rank{$_} = ++$i }
 
- # now print the whole thing sorted by number of members
+ # now print the whole thing sorted by number of members 按成员的成员数量降序打印
  foreach $family ( sort { keys %{ $HoH{$b} } <=> keys %{ $HoH{$a} } } keys %HoH ) {
      print "$family: { ";
-     # and print these according to rank order
+     # and print these according to rank order 指定sort排序规则，按角色评分升序打印
      for $role ( sort { $rank{$a} <=> $rank{$b} }  keys %{ $HoH{$family} } ) {
          print "$role=$HoH{$family}{$role} ";
      }
@@ -728,13 +738,15 @@ X<hash of hashes> X<HoH>
  }
 
 
-=head1 MORE ELABORATE RECORDS
+=head1 MORE ELABORATE RECORDS 更详细的数据结构示例
 X<record> X<structure> X<struct>
 
-=head2 Declaration of MORE ELABORATE RECORDS
+=head2 Declaration of MORE ELABORATE RECORDS 声明复杂的数据结构
 
 Here's a sample showing how to create and use a record whose fields are of
 many different sorts:
+
+下面一个示例演示如何创建和使用一个复杂数据结构，会使用多种不同的排序方法.
 
      $rec = {
 	 TEXT      => $string,
@@ -756,14 +768,14 @@ many different sorts:
      $answer = $rec->{THATCODE}->($arg);
      $answer = $rec->{THISCODE}->($arg1, $arg2);
 
-     # careful of extra block braces on fh ref
+     # careful of extra block braces on fh ref 注意句柄引用的大括号
      print { $rec->{HANDLE} } "a string\n";
 
      use FileHandle;
      $rec->{HANDLE}->autoflush(1);
      $rec->{HANDLE}->print(" a string\n");
 
-=head2 Declaration of a HASH OF COMPLEX RECORDS
+=head2 Declaration of a HASH OF COMPLEX RECORDS 声明一个复杂的哈希
 
      %TV = (
         flintstones => {
@@ -797,28 +809,29 @@ many different sorts:
          },
       );
 
-=head2 Generation of a HASH OF COMPLEX RECORDS
+=head2 Generation of a HASH OF COMPLEX RECORDS 构造一个复杂的哈希
 
-     # reading from file
+     # reading from file 读取文件
      # this is most easily done by having the file itself be
      # in the raw data format as shown above.  perl is happy
      # to parse complex data structures if declared as data, so
      # sometimes it's easiest to do that
-
-     # here's a piece by piece build up
+     # 如果把上面的代码当作原始数据存入文件，读取这个文件让Perl来处理是很简单的事情。
+     # Perl很高兴处理复杂的数据结构（声明的数据结构），有些情况也是最方便的做法。
+     # here's a piece by piece build up 下面演示如何一点点添加到数据结构里
      $rec = {};
      $rec->{series} = "flintstones";
      $rec->{nights} = [ find_days() ];
 
      @members = ();
-     # assume this file in field=value syntax
+     # assume this file in field=value syntax 假定文件格式是“成员=值”这样的
      while (<>) {
          %fields = split /[\s=]+/;
          push @members, { %fields };
      }
      $rec->{members} = [ @members ];
 
-     # now remember the whole thing
+     # now remember the whole thing 赋值，记住$rec
      $TV{ $rec->{series} } = $rec;
 
      ###########################################################
@@ -828,9 +841,12 @@ many different sorts:
      # if you wanted a {kids} field that was a reference
      # to an array of the kids' records without having duplicate
      # records and thus update problems.
+     # 现在，你想构造一个很炫的外部字段，这个外部字段含有返回这个数据结构的指针，
+     # 如果一个地方发生了变化，数据结构都会随之改变，比如，
+     # 你想构造一个{kids}字段的值是孩子数组的引用，不需要复制这个数组，也不用考虑更新的问题。
      ###########################################################
      foreach $family (keys %TV) {
-         $rec = $TV{$family}; # temp pointer
+         $rec = $TV{$family}; # temp pointer 临时指针
          @kids = ();
          for $person ( @{ $rec->{members} } ) {
              if ($person->{role} =~ /kid|son|daughter/) {
@@ -838,12 +854,14 @@ many different sorts:
              }
          }
          # REMEMBER: $rec and $TV{$family} point to same data!!
+         # 注意：$rec和$TV{$family}都指向同一数据
          $rec->{kids} = [ @kids ];
      }
 
      # you copied the array, but the array itself contains pointers
      # to uncopied objects. this means that if you make bart get
      # older via
+     # 
 
      $TV{simpsons}{kids}[0]{age}++;
 
@@ -867,7 +885,7 @@ many different sorts:
          print "\n";
      }
 
-=head1 Database Ties
+=head1 Database Ties 数据库绑定
 
 You cannot easily tie a multilevel data structure (such as a hash of
 hashes) to a dbm file.  The first problem is that all but GDBM and
@@ -877,13 +895,13 @@ module that does partially attempt to address this need is the MLDBM
 module.  Check your nearest CPAN site as described in L<perlmodlib> for
 source code to MLDBM.
 
-=head1 SEE ALSO
+=head1 SEE ALSO 其他参考资料
 
 L<perlref>, L<perllol>, L<perldata>, L<perlobj>
 
-=head1 AUTHOR
+=head1 AUTHOR 作者
 
 Tom Christiansen <F<tchrist@perl.com>>
 
-Last update:
+Last update 最后一次更新 : 
 Wed Oct 23 04:57:50 MET DST 1996
