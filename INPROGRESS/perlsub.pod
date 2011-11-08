@@ -233,7 +233,11 @@ flattened on return.  So all you have managed to do here is stored
 everything in C<@a> and made C<@b> empty.  See 
 L<Pass by Reference> for alternatives.
 
-函数调用可在函数名前显式的加C<&>前缀。
+调用函数可在函数名前显式的加C<&>前缀。较新版本的Perl C<&>前缀是可选的，
+正如函数有预定义的情况下圆括号也是可选的。仅当用做指名函数时C<&>I<不是>
+可选的，例如作为defined()或undef()的参数时。另外，通过函数名或函数引用来
+间接调用函数时C<&>前缀也不是可选的，例如C<&$subref()>或C<&{$subref}()>
+这样的形式，不过也可以用C<< $subref->() >>这种写法。参考L<perlref>。
 
 A subroutine may be called using an explicit C<&> prefix.  The
 C<&> is optional in modern Perl, as are parentheses if the
@@ -245,25 +249,38 @@ reference using the C<&$subref()> or C<&{$subref}()> constructs,
 although the C<< $subref->() >> notation solves that problem.
 See L<perlref> for more about all that.
 
+函数可被递归的调用。如果函数调用时使用C<&>前缀，参数列表是可选的，如果没
+有参数列表，该函数会沿被调前的C<@_>数组变量。这是一高效的机制，新手也许
+会避免使用。
+
 Subroutines may be called recursively.  If a subroutine is called
 using the C<&> form, the argument list is optional, and if omitted,
 no C<@_> array is set up for the subroutine: the C<@_> array at the
 time of the call is visible to subroutine instead.  This is an
 efficiency mechanism that new users may wish to avoid.
 
-    &foo(1,2,3);    # pass three arguments
-    foo(1,2,3);     # the same
+    &foo(1,2,3);    # 传入三个参数
+    foo(1,2,3);     # 同上
 
-    foo();      # pass a null list
-    &foo();     # the same
+    foo();      # 传入空列表
+    &foo();     # 同上
 
-    &foo;       # foo() get current args, like foo(@_) !!
-    foo;        # like foo() IFF sub foo predeclared, else "foo"
+    &foo;       # 当前的@_数组被传入，效果同foo(@_)!!
+    foo;        # 效果同foo() 当且仅当函数foo有预定义，不然的话是一个裸字，同"foo"
+
+C<&>前缀不仅使参数列表成为可选的，而且会禁止函数参数的原型检查。这样做有
+历史的因素，亦是一种便利的方式让你可以逃过参数的原型检查（如果你知道这么
+做的原因）。参考L<原型>。
 
 Not only does the C<&> form make the argument list optional, it also
 disables any prototype checking on arguments you do provide.  This
 is partly for historical reasons, and partly for having a convenient way
 to cheat if you know what you're doing.  See L<Prototypes> below.
+
+全部由大写字母命名的函数是Perl内部保留使用的，就像全部由小写字母命名的模
+块一样。运行时系统会间接的调用这样命名的函数，通常因为一个事件被触发。这
+些特殊的函数有C<AUTOLOAD>，C<CLONE>，C<DESTROY>和所有在L<perltie>和
+L<PeroIO::via>中提到的函数。
 
 Subroutines whose names are in all upper case are reserved to the Perl
 core, as are modules whose names are in all lower case.  A subroutine in
@@ -271,6 +288,9 @@ all capitals is a loosely-held convention meaning it will be called
 indirectly by the run-time system itself, usually due to a triggered event.
 Subroutines that do special, pre-defined things include C<AUTOLOAD>, C<CLONE>,
 C<DESTROY> plus all functions mentioned in L<perltie> and L<PerlIO::via>.
+
+C<BEGIN>，C<CHECK>，C<INIT>和C<END>更像是有名的特殊代码块，一个包里面可
+以有多个这样的代码块，它们B<不能>被直接调用。参考L<perlmod/"BEGIN, CHECK, INIT和END">。
 
 The C<BEGIN>, C<CHECK>, C<INIT> and C<END> subroutines are not so much
 subroutines as named special code blocks, of which you can have more
@@ -287,9 +307,16 @@ Synopsis:
     my @oof = @bar; # declare @oof lexical, and init it
     my $x : Foo = $y;   # similar, with an attribute applied
 
+B<警告>：C<my>申明语句中的属性列表还在不断的演进中。当前的语义和接口可能
+会改变。参考L<attributes>和L<Attribute::Handlers>。
+
 B<WARNING>: The use of attribute lists on C<my> declarations is still
 evolving.  The current semantics and interface are subject to change.
 See L<attributes> and L<Attribute::Handlers>.
+
+C<my>操作符申明的变量列表作用域限制在包围的代码块里，例如，条件语句
+(C<if/unless/elsif/else>)，循环语句(C<for/foreach/while/until/continue>)，
+函数，C<eval>或由C<do/require/use>导入的文件。
 
 The C<my> operator declares the listed variables to be lexically
 confined to the enclosing block, conditional (C<if/unless/elsif/else>),
@@ -995,7 +1022,7 @@ Notice to pass back just the bare *FH, not its reference.
     return open (FH, $path) ? *FH : undef;
     }
 
-=head2 Prototypes
+=head2 原型
 
 Perl supports a very limited kind of compile-time argument checking
 using function prototyping.  If you declare
@@ -1447,3 +1474,7 @@ See L<perlembed> if you'd like to learn about calling Perl subroutines from C.
 See L<perlmod> to learn about bundling up your functions in separate files.
 See L<perlmodlib> to learn what library modules come standard on your system.
 See L<perltoot> to learn how to make object method calls.
+
+=head1 TRANSLATORS
+
+Shu Cao, C<shucao@cpan.org>.
