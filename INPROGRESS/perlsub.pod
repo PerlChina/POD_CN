@@ -277,12 +277,20 @@ disables any prototype checking on arguments you do provide.  This
 is partly for historical reasons, and partly for having a convenient way
 to cheat if you know what you're doing.  See L<Prototypes> below.
 
+全部由大写字母命名的函数是Perl内部保留使用的，就像全部由小写字母命名的模
+块一样。运行时系统会间接的调用这样命名的函数，通常因为一个事件被触发。这
+些特殊的函数有C<AUTOLOAD>，C<CLONE>，C<DESTROY>和所有在L<perltie>和
+L<PeroIO::via>中提到的函数。
+
 Subroutines whose names are in all upper case are reserved to the Perl
 core, as are modules whose names are in all lower case.  A subroutine in
 all capitals is a loosely-held convention meaning it will be called
 indirectly by the run-time system itself, usually due to a triggered event.
 Subroutines that do special, pre-defined things include C<AUTOLOAD>, C<CLONE>,
 C<DESTROY> plus all functions mentioned in L<perltie> and L<PerlIO::via>.
+
+C<BEGIN>，C<CHECK>，C<INIT>和C<END>更像是有名的特殊代码块，一个包里面可
+以有多个这样的代码块，它们B<不能>被直接调用。参考L<perlmod/"BEGIN, CHECK, INIT和END">。
 
 The C<BEGIN>, C<CHECK>, C<INIT> and C<END> subroutines are not so much
 subroutines as named special code blocks, of which you can have more
@@ -299,9 +307,16 @@ Synopsis:
     my @oof = @bar; # declare @oof lexical, and init it
     my $x : Foo = $y;   # similar, with an attribute applied
 
+B<警告>：C<my>申明语句中的属性列表还在不断的演进中。当前的语义和接口可能
+会改变。参考L<attributes>和L<Attribute::Handlers>。
+
 B<WARNING>: The use of attribute lists on C<my> declarations is still
 evolving.  The current semantics and interface are subject to change.
 See L<attributes> and L<Attribute::Handlers>.
+
+C<my>操作符申明的变量列表作用域限制在包围的代码块里，例如，条件语句
+(C<if/unless/elsif/else>)，循环语句(C<for/foreach/while/until/continue>)，
+函数，C<eval>或由C<do/require/use>导入的文件。
 
 The C<my> operator declares the listed variables to be lexically
 confined to the enclosing block, conditional (C<if/unless/elsif/else>),
@@ -1459,3 +1474,7 @@ See L<perlembed> if you'd like to learn about calling Perl subroutines from C.
 See L<perlmod> to learn about bundling up your functions in separate files.
 See L<perlmodlib> to learn what library modules come standard on your system.
 See L<perltoot> to learn how to make object method calls.
+
+=head1 TRANSLATORS
+
+Shu Cao, C<shucao@cpan.org>.
