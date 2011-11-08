@@ -29,9 +29,9 @@ in the years since Perl 5.0 we've seen a number of common patterns
 emerge in Perl OO. Fortunately, Perl's flexibility has allowed a rich
 ecosystem of Perl OO systems to flourish.
 
-默认情况下，Perl内置的OO系统非常轻量，因此你必须自己做大部分工作。这种小
+默认情况下，Perl内置的OO系统非常小巧，这使你必须自己做大部分工作。这种小
 巧在1994年那个时代是合理的，但自Perl5.0发布以来，许多通用的模式在Perl OO
-系统里面显现。幸运的是，Perl的灵活性允许Perl OO的生态系统演化和开花。
+系统里面显现。幸运的是，Perl的灵活性允许Perl OO的生态系统演化和繁荣。
 
 If you want to know how Perl OO works under the hood, the L<perlobj>
 document explains the nitty gritty details.
@@ -158,6 +158,7 @@ construct a new object:
 
 (Don't worry about that C<< -> >> operator, it will be explained
 later.)
+
 (别担心那个C<< -> >>操作符，接下来会解释)
 
 =head3 Blessing
@@ -185,8 +186,8 @@ Once a referent has been blessed, the C<blessed> function from the
 L<Scalar::Util> core module can tell us its class name. This subroutine
 returns an object's class when passed an object, and false otherwise.
 
-当引用被bless后，L<Scalar::Util>模块中的C<blessed>函数可以告诉我们它的类
-名。当其参数为对象时，这个函数返回对象的类，否则返回false。
+当一个变量被bless后，L<Scalar::Util>模块中的C<blessed>函数可以告诉我们它
+的类名。当其参数为对象时，这个函数返回对象的类，否则返回false。
 
   use Scalar::Util 'blessed';
 
@@ -1162,7 +1163,7 @@ L<Class::Accessor>, and L<Object::Tiny> to see which OO system is right
 for you.
 
 我们鼓励你使用并测试这些模块，L<Moose>，L<Class::Accessor>，
-L<Object::Tiny>，然后再看哪个适合于你。
+L<Object::Tiny>，然后再决定哪个适合于你。
 
 =head1 TRANSLATORS
 
