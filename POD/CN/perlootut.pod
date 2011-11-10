@@ -1,0 +1,616 @@
+=encoding utf8
+
+=head1 NAME
+
+perlootut - Perl教程之面向对象编程
+
+=head1 描述 
+
+此文档提供了一个使用Perl进行面向对象编程的介绍。开篇是一个简短的关于面向
+对象设计概念的概述，之后介绍了L<CPAN|http://search.cpan.org>上基于Perl的
+各种OO系统。
+
+默认情况下，Perl内置的OO系统非常小巧，这使你必须自己做大部分工作。这种小
+巧在1994年那个时代是合理的，但自Perl5.0发布以来，许多通用的模式在Perl OO
+系统里面显现。幸运的是，Perl的灵活性允许Perl OO的生态系统演化和繁荣。
+
+如果你想知道Perl OO底层是如何工作的，L<perlobj>提供了详细的信息。
+
+此文档假设你已经掌握了基本的Perl语法，变量类型，操作符和函数调用。如果你
+还不理解这些概念，请先阅读L<perlintro>。同时你还应该阅读L<perlsyn>，
+L<perlop>，L<perlsub>。
+
+=head1 面向对象基础
+
+大部分面向对象编程系统都有一些通用的概念。你可能已经听说过了一些像“类”，
+“对象”，“方法”和“属性”的术语。理解这些概念，使你能够更加容易的阅读和编写
+面向对象代码。即使你已经熟悉了这些，你仍然可以阅读一下这一节，因为这里用
+Perl的术语解释了这些概念。
+
+Perl的OO系统基于类(class-based)。基于类的OO是相当通用的，java，
+C++，C#，Python，Ruby和很多其他语言都是如此。当然也有其他类型的面向对象
+。Javascript就是使用另一种模式的流行语言，其OO系统是基于原型的
+(prototype-based)。
+
+=head2 对象
+
+B<对象>是聚合了数据和操作数据的函数的数据结构。对象的数据叫做B<属性>，它
+的函数叫做B<方法>。一个对象可以想象成为一个名词(一个人，一个web服务，一
+台计算机)。
+
+对象代表了一个单一但不连续的物体。比如，它可能代表一个文件。文件
+对象的属性可能包括路径，内容，最后修改时间。如果我们创建一个代表
+F</etc/hostname>文件的对象，这个文件存放在名为"foo.example.com"的机器上
+。这个对象的路径就应该是"/etc/hostname"，内容是"foo\n"，最后修改时间是自
+epoch后1304974868秒。
+
+和文件相关的方法可以有C<rename()>和C<write()>。
+
+Perl的大部分对象都是哈希，如果你使用我们推荐的OO系统，则你完全不必关心这
+一点。实际上，最好将对象看做一个不透明的内部数据结构。
+
+=head2 类
+
+B<类>定义了一个类别的对象的行为。类是一个类别的名字(比如"File")，类还
+定义了这个类别中的对象的行为。
+
+所有的对象都属于某个特定类。比如，我们的F</etc/hostname>对象属于C<File>
+类。当我们想创建一个特定对象时，我们以它的类开始，B<创建>或者B<实例化>一
+个对象。对象经常被称为一个类的B<实例>。
+
+在Perl中，任何包都可以是一个类。一个包是否为类的区别在于这个包是如何被使
+用的。以下是我们的C<File>类的"类定义"。
+
+  package File;
+
+对于Perl来说，没有一个特定的关键字来创建对象，但大部分CPAN上的OO模块都使
+用一个名为C<new()>的方法。
+
+  my $hostname = File->new(
+      path          => '/etc/hostname',
+      content       => "foo\n",
+      last_mod_time => 1304974868,
+  );
+
+(别担心那个C<< -> >>操作符，接下来会解释)
+
+=head3 Blessing
+
+如前所述，大多Perl的对象都是哈希，但它也可以是任意Perl数据类型(标量，数
+组等)。把一个普通的Perl数据结构转换成对象的方式是使用C<bless>函数对它进
+行B<Blessing>。
+
+尽管我们强烈建议你不要从最底层开始创建你的对象，但你也应该知道B<bless>这
+个术语。一个B<blessed>的数据结构是一个对象。我们有时候会说一个对象被“
+blessed into a class”。
+
+当一个变量被bless后，L<Scalar::Util>模块中的C<blessed>函数可以告诉我们它
+的类名。当其参数为对象时，这个函数返回对象的类，否则返回false。
+
+  use Scalar::Util 'blessed';
+
+  print blessed($hash);      # undef
+  print blessed($hostname);  # File
+
+=head3 构造器
+
+B<构造器>用来创建新对象。不像其他语言中提供了构造器语法一样，在Perl中，
+一个类的构造器只是一个普通的方法。大部分Perl的类使用C<new>作为构造器的名
+字。
+
+  my $file = File->new(...);
+
+=head2 方法
+
+你已经知道了B<方法>就是操作对象的子程序。你也可以将方法看做对象能做的事
+情。如果对象是名词，那么方法就是它的动作(保存，打印，打开)。
+
+在Perl里面，方法是定义类的包里面的子程序。方法的第一个参数总是对象。
+
+  sub print_info {
+      my $self = shift;
+
+      print "This file is at ", $self->path, "\n";
+  }
+
+  $file->print_info;
+  # The file is at /etc/hostname
+
+方法的特殊之处在于它是“怎样被调用的”。箭头操作符C<< -> >>告诉Perl我们在
+调用一个方法。
+
+一个有意思的名字，它代表箭头左边的部分。Invocant可以是类名或者一个对象。
+我们当然也可以给方法传递其他参数。
+
+  sub print_info {
+      my $self   = shift;
+      my $prefix = shift // "This file is at ";
+
+      print $prefix, ", ", $self->path, "\n";
+  }
+
+  $file->print_info("The file is located at ");
+  # The file is located at /etc/hostname
+
+=head2 属性
+
+所有的类都可以定义它的B<属性>。当我们初始化一个对象时，我们可以给属性赋
+值。比如，每个C<文件>对象有一个路径。属性(attributes)有时也叫做
+B<properties>
+
+Perl没有用来定义属性的语法。在底层，属性就是类所对应哈希的键，不过你不需
+要关注这点。
+
+我们推荐你只通过B<存取器>来访问属性。存取器是用来获得或设置属性的值的方
+法。我们在C<print_info()>里面已经看到过了: C<< $self->path >>
+
+你可能也见过B<getter>和B<setter>这样的术语。这是两种不同的存取器。Getter
+用来获得属性的值，而setter用来设置值。Setter的另一个叫法是B<mutator>
+
+属性可以定义为只读或者可读写的。只读的属性只能在创建对象的时候被赋值，而
+可读写的属性在任何时候都能够更改。
+
+属性的值也可以是另外一个对象。比如，C<File>类可以返回一个L<DateTime>对象
+代表其最后修改时间，而不是返回数字。
+
+类也可以没有任何公开的可设置的属性。不是每一个类都有属性和方法。
+
+=head2 多态
+
+B<多态>是描述来自不同类的对象公用一个接口的说法。比如，C<File>和
+C<WebPage>类都可以有C<print_content()>方法。对于不同的类，调用这个方法的
+输出可能不同，但它们有通用的接口。
+
+尽管在很多方面，这两个类都不尽相同，但对于C<print_content>方法来说，他们
+是一样的。这意味着我们可以在任一类的对象上调用这个C<print_content>方法，
+而B<我们都不需要知道对象属于哪个类!>
+
+多态是面向对象设计的关键概念之一。
+
+=head2 继承
+
+B<继承>可以让你创建已经存在的类的一个特殊版本。继承创建的新类能够复用原
+来类的方法和属性。
+
+比如，我们可以创建一个C<File::MP3>类，这个类从C<File>继承而来。
+C<File::MP3>是C<File>的一个I<更加具体>的版本。所有的mp3都是文件，但不是
+所有的文件都是mp3。
+
+我们经常把继承关系称为B<父-子>或者C<超类/子类>关系。有时候我们说子类是一
+个父类（比如C<File::MP3>类是一个C<File>类）。
+
+C<File>是C<File::MP3>的超类，而C<File::MP3>是C<FILE>的子类。
+
+  package File::MP3;
+
+  use parent 'File';
+
+L<parent>模块是Perl让你定义继承关系的诸多方法之一。
+
+Perl允许多重继承，这意味着一个类可以继承自多个父类。尽管这是可能的，但我
+们强烈反对这样做。通常，你可以使用B<角色(roles)>来做到用多重继承能做到的
+所有事情，而且做法还更加清晰。
+
+注意对一个给定类，给它定义多个子类没有什么关系，这是通用且安全的做法。比
+如，我们可以第一C<File::MP3::FixedBitrate>和
+C<File::MP3::VariableBitrate>类，用来区分不同类别的mp3文件。
+
+=head3 方法重载和方法解析
+
+继承允许两个类共享代码。默认情况下，父类的所有方法都能在子类中使用。子类
+可以提供它自己的实现来B<重载>父类的方法。比如，如果我们有一个
+C<File::MP3>对象，它有从C<File>而来的C<print_info()>方法。
+
+  my $cage = File::MP3->new(
+      path          => 'mp3s/My-Body-Is-a-Cage.mp3',
+      content       => $mp3_data,
+      last_mod_time => 1304974868,
+      title         => 'My Body Is a Cage',
+  );
+
+  $cage->print_info;
+  # The file is at mp3s/My-Body-Is-a-Cage.mp3
+
+如果我们希望能够打印mp3的名字，那么可以重载这个方法。
+
+  package File::MP3;
+
+  use parent 'File';
+
+  sub print_info {
+      my $self = shift;
+
+      print "This file is at ", $self->path, "\n";
+      print "Its title is ", $self->title, "\n";
+  }
+
+  $cage->print_info;
+  # The file is at mp3s/My-Body-Is-a-Cage.mp3
+  # Its title is My Body Is a Cage
+
+决定使用哪个方法的过程叫做B<方法解析>。Perl在这里所做的是：先查看对象的
+所属类(这里是C<File::MP3>)，如果类定义了这个方法，那么调用这个类的版本。
+否者，Perl查看每个父类。对于C<File::MP3>，它的父类只有C<File>。如果
+C<File::MP3>没有定义这个方法，而C<File>定义了，那么Perl就会调用C<File>里
+面的定义。
+
+如果C<File>继承自C<DataSource>，而C<DataSource>继承自C<Thing>，那么有必
+要的话，Perl会“源着继承链自下而上”的查找方法定义。
+
+可以明确的在子类中调用父类的方法。
+
+  package File::MP3;
+
+  use parent 'File';
+
+  sub print_info {
+      my $self = shift;
+
+      $self->SUPER::print_info();
+      print "Its title is ", $self->title, "\n";
+  }
+
+C<SUPER::>部分告诉Perl，在C<File::MP3>继承链中查找C<print_info()>方法。
+当在父类中找到了这个方法，则调用之。
+
+之前我们提到了多重继承。它的主要问题就是使方法解析变得非常复杂。更多细节
+可以查阅L<perlobj>。
+
+=head2 封装
+
+B<封装>的理念是每个对象都是不透明的。当其他开发人员使用你的类时，他们
+不需要知道这个类是I<如何>实现的，而只需要知道它做什么就可以了。
+
+封装在许多方面都是非常重要的。首先，它允许你将公用接口和内部实现分开。这
+意味着你能在修改实现的同时不破坏接口。
+
+其次，如果很好的封装了类，继承也将变得更加简单。理想情况是，子类使用和父
+类相同的接口来访问对象数据。实际上，有时候继承会破坏封装，但好的接口会减
+少这种破坏。
+
+之前我们提到大部分Perl的对象都是用哈希实现的。封装的原则告诉我们不应依赖
+于此，而应该使用存取器来获得哈希中的数据。我们接下来推荐的对象系统都能自
+动生成存取器。如果你使用它们之中的任意一个，你永远不需要使用哈希来访问对
+象。
+
+=head2 组合
+
+在面向对象的代码中，我们经常能看到一个对象指向另外一个对象，这叫做对象
+B<组合>，或者B<有一个>关系。
+
+之前我们提到C<File>类的C<last_mod_time>方法能够返回一个C<DateTime>对象。
+这就是一个对象组合的例子。我们也可以更进一步，让C<path>和C<content>存取
+器也返回对象。那么C<File>就和许多其他的对象进行了组合。
+
+=head2 角色B<Roles>
+
+B<角色>是一个类“做的事情”，而不是类是什么。对Perl来说，角色是一个相对较
+新，同时也很流行的概念。角色B<应用>于类。有时我们说类B<消耗>角色。
+
+角色是继承之外，提供多态性的另一种选择。假设我们有两个类，C<Radio>和
+C<Computer>。这两种物体都有开关键，我们想在类定义中为之建立模型。
+
+我们可以让两个类都继承自同一父类，比如C<Machine>，但不是所有的机器都有开
+关键。我们也可以建立一个叫C<HasOnOffSwitch>的父类，但这也太文绉绉了。
+Radio和Computers不是这种父类的特殊体。这个父类定义得有点滑稽。
+
+这就是角色所适合的地方。此时建立一个C<HasOnOffSwitch>角色并将之应用于类
+显得更加合理。这个角色可以定义如C<turn_on()>和C<turn_off()>之类的接口。
+
+Perl并没有关于角色的内置接口。过去，人们都只能别无选择的使用多重继承。而
+现在，CPAN上有许多模块可以让你使用角色。
+
+=head2 什么时候使用OO
+
+面向对象并不是所有问题的最好解决方案。在I<Perl最佳实践>(copyright 2004,
+Published by O'Reilly Media, Inc.)中，Damian Conway提供了一个决定OO是否
+是解决你的问题的最好方案的列表。
+
+=over 4
+
+=item *
+
+在设计的系统非常庞大，或者可能变得庞大。
+
+=item *
+
+数据可以聚合成一个明显的结构，特别是每个聚合中有大量数据的时候。
+
+=item *
+
+各种类型的数据会形成自然的层次，让继承和多态的使用更为容易。
+
+=item *
+
+你有一些数据，许多不同的运算都会应用在那些数据上面。
+
+=item *
+
+你必须对一些相关类型的数据做一些相同的通用运算，但是会根据运算所应用于特
+定的数据类型而有些细微的差异。
+
+=item *
+
+你可能日后要增加新的数据类型。
+
+=item *
+
+数据之间的交互最好以运算符表示
+
+=item *
+
+系统中个别组件的时间可能随时间而改变
+
+=item *
+
+系统设计已经是面向对象的
+
+=item *
+
+有很多其他程序员会使用你的代码模块
+
+=back
+
+=head1 PERL OO 系统
+
+就像前面所说的一样，Perl内置的OO系统非常小巧，也相当灵活。这些年来，在
+Perl的内置系统上面，人们开发了许多高级系统，用以提供更多的特性和便利。
+
+我们强烈推荐你使用这些系统中的一个。它们之中即使是最轻巧的实现都能简化许
+多重复工作。没有任何理由从零开始用Perl构建你的类。
+
+如果你对这些系统的内部实现感兴趣，请参阅L<perlobj>
+
+=head2 Moose
+
+L<Moose>自称为“Perl 5的后现代对象系统”。不要被吓到，“后现代”一词出现
+在这里，只是对Larry将Perl称作“第一种后现代计算机语言”的呼应。
+
+C<Moose>提供了一个完全而现代化的OO系统。对它影响最大的是Common Lisp的面
+向对象系统，同时它也借鉴了Smalltalk和许多其他编程语言的理念。C<Moose>由
+Stevan Little创建，并从他对Perl 6 OO的设计工作中获益良多。
+
+这是我们使用C<Moose>的C<File>类
+
+  package File;
+  use Moose;
+
+  has path          => ( is => 'ro' );
+  has content       => ( is => 'ro' );
+  has last_mod_time => ( is => 'ro' );
+
+  sub print_info {
+      my $self = shift;
+
+      print "This file is at ", $self->path, "\n";
+  }
+
+C<Moose>提供了许多特性：
+
+=over 4
+
+=item * Declarative sugar
+
+=item * 声明式的语法糖
+
+C<Moose>提供了一层声明式的语法糖，用来定义类。这些语法糖只是一系列导出的
+函数，它们可以使定义你的类的工作变得更加简单和更具可移植性。你可以描述你
+的类是什么，而不用去告诉Perl怎样实现它。
+
+C<has()>子函数定义了一个属性，Moose会自动为其创建存取器。它还帮你创建了
+C<new()>方法。这个构造器知道你所定义的属性，所以你能够在创建一个C<File>
+对象时给它们赋值。
+
+=item * 内置角色
+
+C<Moose>让你像定义类一样定义角色
+
+  package HasOnOfSwitch;
+  use Moose::Role;
+
+  has is_on => (
+      is  => 'rw',
+      isa => 'Bool',
+  );
+
+  sub turn_on {
+      my $self = shift;
+      $self->is_on(1);
+  }
+
+  sub turn_off {
+      my $self = shift;
+      $self->is_on(0);
+  }
+
+=item * 一个小型的类型系统
+
+在上面的例子中，创建C<is_on>属性的时候，我们给C<has()>传递了参数C<< isa
+=> 'Bool' >>。这是在告诉C<Moose>，这个属性必须是一个布尔值。如果我们给它
+设置非法值，代码将会抛出错误。
+
+
+=item * 完全的内省和控制机制
+
+Perl的内置内省特性及其微小。C<Moose>在它之上，为你的类建立了一个完全的内
+省层，使得你可以问诸如“File类实现了哪些方法？”之类的问题。它还可以让你
+随心所欲的修改你的类。
+
+=item * 自宿主(Self-hosted)和可扩展性
+
+C<Moose>使用自己的内省API描述自己。除了这是一个很酷的技巧外，它还意味着
+你可以用C<Moose>来扩展C<Moose>。
+
+=item * 丰富的生态系统
+
+在CPANS上的
+L<MooseX|http://search.cpan.org/search?query=MooseX&mode=dist>命名空间
+下，有一个关于Moose扩展的丰富的生态系统。此外，CPAN上很多模块已经在使用
+C<Moose>，提供了许多可供学习的例子。
+
+=item * 更多特性
+
+C<Moose>是一个非常强大的工具，我们不能在这里介绍它全部的特性。我们鼓励你
+从L<Moose::Manual|http://search.cpan.org/perldoc?Moose::Manual>开始，通
+过阅读C<Moose>的文档来学习它，
+
+=back
+
+当然，C<Moose>也并完美。
+
+C<Moose>会使你的代码载入变慢。C<Moose>不是一个小型系统，当你定义你的类时
+，它做了I<大量>代码生成工作。这意味着你的代码在运行期间能尽可能的快，但
+在你的模块第一次被载入时，必须付出一些时间代价。
+
+这个载入时间在启动速度重要的时候会成为一个问题。比如命令行脚本，或者必须
+在每次执行都被载入的纯CGI脚本。
+
+不过先别慌，许多人的确在写命令行工具和其他对启动时间敏感的代码中使用了
+C<Moose>。我们鼓励你先试用一下它，然后再考虑启动速度的问题。
+
+同时C<Moose>还有很多其他模块的依赖关系，其中大部分都是小型的独立模块，还
+有一部分是为C<Moose>而写的。C<Moose>本身，以及它的一些依赖模块需要用到编
+译器。如果你想将你的软件安装在一个没有编译器的系统上面，或者有I<任何>依
+赖关系都是问题，那么C<Moose>可能不适合你。
+
+=head3 Mouse
+
+如果你使用了C<Moose>之后，发现这些问题之一阻止你继续使用它，我们建议你接
+下来考虑一下C<Mouse>。C<Mouse>用一个更简单的包，实现了C<Moose>功能的一个
+子集。对于它所实现的所有特性，其接口和C<Moose>是I<完全相同的>，这意味着
+你可以非常容易的从C<Moose>迁移到C<Mouse>
+
+C<Mouse>没有实现大部分C<Moose>的内省接口，所以在载入你的模块时，它的速度
+更快。同时，它的所有依赖模块都由Perl核心提供，且不需要编译器就能运行。如
+果你有编译器，那么C<Mouse>会用它来编译一些代码，从而加快运行速度。
+
+最后，它还包含了一个C<Mouse::Tiny>模块，这个模块将大部分C<Mouse>特性打包
+到了一个文件里面。把这个文件拷贝到你应用的库目录，你可以轻易打包你的应用
+。
+
+C<Moose>的作者希望通过充分改进C<Moose>，使C<Mouse>终有一天能够过时，但现
+在C<Mouse>仍然提供了除C<Moose>之外的一个有价值的选择。
+
+=head2 Class::Accessor
+
+L<Class::Accessor>完全和C<Moose>相反。它提供了很少的特性，也不是自宿主的
+。
+
+但它非常简单，完全由Perl实现，没有非核心依赖，同时还提供了“类Moose”的
+借口。
+
+尽管做的不多，它仍然比你从头开始写你的类好。
+
+这是用C<Class::Accessor>实现的C<File>类：
+
+  package File;
+  use Class::Accessor 'antlers';
+
+  has path          => ( is => 'ro' );
+  has content       => ( is => 'ro' );
+  has last_mod_time => ( is => 'ro' );
+
+  sub print_info {
+      my $self = shift;
+
+      print "This file is at ", $self->path, "\n";
+  }
+
+
+C<antlers>导入符告诉C<Class::Accessor>我们想用类C<Moose>的语法来定义属性
+。你唯一可以传给C<has>的参数是C<is>。当你使用C<Class::Accessor>时，我推
+荐你使用类Moose的语法，这意味着当你将来决定使用C<Moose>时，你可以更平滑
+的升级。
+
+像C<Moose>一样，C<Class::Accessor>为类自动创建构造器和存取器。
+
+=head2 Object::Tiny
+
+最后介绍C<Object::Tiny>。这个模块就如它的名字，完全没有依赖关系且借口及
+其简单。但我们仍然认为比起自己写你的OO代码，使用这个模块更加容易。
+
+再一次，这是我们的C<File>类：
+
+  package File;
+  use Object::Tiny qw( path content last_mod_time );
+
+  sub print_info {
+      my $self = shift;
+
+      print "This file is at ", $self->path, "\n";
+  }
+
+这就足够了!
+
+使用C<Object::Tiny>，所有的存取器都是只读的。它为你类生成构造器，也为你
+定义的属性生成存取器。
+
+=head2 Role::Tiny
+
+我们前面提过，角色提供了继承之外的其他选择，但Perl没有内置的角色支持。如
+果你选择使用Moose，它提供了一个成熟的角色实现。如果你使用其他我们推荐的
+OO模块，你仍然可以通过L<Role::Tiny>使用角色。
+
+C<Role::Tiny>提供了一些Moose角色系统的特性，但它更加小巧。值得注意的是，
+它不支持任何属性定义，所以你必须手动定义它们。但它任然十分有用，并且和
+C<Class::Accessor>或C<Object::Tiny>在一起工作得很好。
+
+=head2 OO系统总结
+
+这是关于我们提到的模块的一个简单回顾
+
+=over 4
+
+=item * L<Moose>
+
+C<Moose>是最好的选择。它提供了许多特性，强大的生态系统，大量的用户基础。
+我们也简单的提到了C<Mouse>，它是C<Moose>的简化版，也是当Moose不适合于你
+的应用的时候的一个合理选择。
+
+=item * L<Class::Accessor>
+
+C<Class::Accessor>做得比C<Moose>少许多，如果你发现Moose太重量级了，它是
+一个很好的选择。这个模块已经存在了相当长时间，而且也通过了很好的测试。它
+还提供了一个轻量的C<Moose>兼容接口，这使得从C<Class::Accessor>迁移到
+C<Moose>非常简单。
+
+=item * L<Object::Tiny>
+
+C<Object::Tiny>是最后的选择。它没有任何依赖，不需要学习任何语法。当你需
+要一个超级简单的环境，并且不需要考虑细节的将一些东西捏合起来时，它是一个
+不错的选择。
+
+=item * L<Role::Tiny>
+
+如果你发现自己在考虑多重继承的时候，可以组合使用C<Role::Tiny>和
+C<Class::Accessor>或C<Object::Tiny>。如果你使用C<Moose>，它提供了自己的
+角色实现。
+
+=back
+
+=head2 其他OO系统
+
+除了这里提到的OO系统外，CPAN上还有成堆的相关模块。当你在使用别人的代码时
+，很有可能就会碰到它们。
+
+其次，还有许多代码使用Perl的内置OO特性“手动”的实现它自己的OO。如果你需
+要维护这种代码，你必须阅读L<perlobj>，理解Perl的内置OO是如何工作的。
+
+=head1 总结
+
+就像我们前面所说，Perl轻量的OO系统使得CPAN上面存在大量的OO模块。尽管你
+仍然可以选择自己手动编写你的类，但在现在，2011，你没有任何理由要去那样做。
+
+对于小项目，L<Object::Tiny>和L<Class::Accessor>都提供了一个轻量的对象系
+统，能够解决你的基本问题。
+
+对于更大的项目，L<Moose>提供了丰富的特性，使你能够关注在业务逻辑层面上。
+
+我们鼓励你使用并测试这些模块，L<Moose>，L<Class::Accessor>，
+L<Object::Tiny>，然后再决定哪个适合于你。
+
+=head1 TRANSLATORS
+
+Woosley Xu C<woosley.xu@gmail.com>
+
+=cut
