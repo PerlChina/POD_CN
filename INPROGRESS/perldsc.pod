@@ -1,12 +1,17 @@
 =encoding utf8
 
-=head1 NAME 名称
+=head1 NAME
+
+=head1 名称
+
 X<data structure> X<complex data structure> X<struct>
 
 perldsc - Perl Data Structures Cookbook
 perldec - Perl数据结构手册
 
-=head1 DESCRIPTION 描述
+=head1 DESCRIPTION
+
+=head1 描述
 
 The single feature most sorely lacking in the Perl programming language
 prior to its 5.0 release was complex data structures.  Even without direct
@@ -17,6 +22,8 @@ keys are actually more like a single concatenated string C<"$AoA$b">, but
 traversal and sorting were difficult.  More desperate programmers even
 hacked Perl's internal symbol table directly, a strategy that proved hard
 to develop and maintain--to put it mildly.
+
+在版本5.0之前，Perl语言缺少的特性中最重要的一个就是对复杂数据结构的支持。这种情况下，一些优秀的程序员会自己实现对复杂数据结构的支持，这是一个非常困难的、让人身心憔悴的工作。偶尔可以借助B<awk>的C<$m{$AoA,$b}>符号，它实际上更像一个单一的串联字符串C<"$AoA$b">，但是遍历和排序很困难。更绝望的程序员直接使用Perl的内部符号表，这种做法，委婉地讲，开发和维护都会很困难。
 
 The 5.0 release of Perl let us have complex data structures.  You
 may now write something like this and all of a sudden, you'd have an array
@@ -68,15 +75,25 @@ sections on each of the following:
 
 =over 5
 
-=item * arrays of arrays 多维数组
+=item * arrays of arrays
 
-=item * hashes of arrays 哈希数组
+=item * 多维数组
 
-=item * arrays of hashes 数组哈希
+=item * hashes of arrays
 
-=item * hashes of hashes 哈希的哈希
+=item * 哈希数组
 
-=item * more elaborate constructs 更复杂的结构
+=item * arrays of hashes
+
+=item * 数组哈希
+
+=item * hashes of hashes
+
+=item * 哈希的哈希
+
+=item * more elaborate constructs
+
+=item * 更复杂的结构
 
 =back
 
@@ -85,7 +102,10 @@ these types of data structures.
 
 现在，让我们先看看常用的数据结构。
 
-=head1 REFERENCES 参考信息
+=head1 REFERENCES
+
+=head1 参考信息
+
 X<reference> X<dereference> X<dereferencing> X<pointer>
 
 The most important thing to understand about all data structures in
@@ -145,7 +165,9 @@ like C<$a-E<gt>[3]>, C<$h-E<gt>{fred}>, or even C<$ob-E<gt>method()-E<gt>[3]>.
 
 这是因为Perl不会解析引用的引用。如果你想获取一个引用引用的内容，你需要亲自实现，有两种方法，一种是使用前缀类型指示符，像C<${$blah}>，C<@{$blah}>，C<@{$blah[$i]}>，另一种是后缀类型指示箭头，像C<$a-E<gt>[3]>，C<$h-E<gt>{fred}>，甚至这样C<$ob-E<gt>method()-E<gt>[3]>。
 
-=head1 COMMON MISTAKES 常见错误
+=head1 COMMON MISTAKES
+
+=head1 常见错误
 
 The two most common mistakes made in constructing something like
 an array of arrays is either accidentally counting the number of
@@ -251,12 +273,14 @@ whether C<$AoA[$i]> had been undefined to start with, or whether it
 already contained a reference.  If you had already populated @AoA with
 references, as in
 
-真的是一样吗？呃，可能吧，也可能不是。
-
+真的是一样吗？呃，可能一样吧，也可能不一样。很细微的区别是，当你用方括号赋值时，你确信你知道它总是一个全新的引用，新I<复制>了一份数据。
+这完全取决于C<$AoA[$i]>是未定义开始使用，还是它是否已经是一个引用了。在这个新示例里用C<@{$AoA[$i]}>左边解引用赋值，可以继续做其他事情。如果你已经把引用赋值给@AoA，像这样
     $AoA[3] = \@another_array;
 
 Then the assignment with the indirection on the left-hand-side would
 use the existing reference that was already there:
+
+间接地在左侧赋值，会（would）使用已经存在的引用：
 
     @{$AoA[3]} = @array;
 
@@ -266,12 +290,18 @@ something is "interesting", that rather than meaning "intriguing",
 they're disturbingly more apt to mean that it's "annoying",
 "difficult", or both?  :-)
 
+当然，这个I<would>有个“有意思的”效果，会破坏之前的数组@another_array。（你是否注意过，当一个程序员说某件事很有意思，其实是说这事很耐心寻味，而不是说这事让人不爽地更倾向理解为恼人、困难，或者两者都有？ :-）
+
 So just remember always to use the array or hash constructors with C<[]>
 or C<{}>, and you'll be fine, although it's not always optimally
 efficient.
 
+所以脑海中要始终记住用C<[]>构造数组或者用C<{}>构造哈希，这样你就放心了，尽管它的效率不一定高。
+
 Surprisingly, the following dangerous-looking construct will
 actually work out fine:
+
+令人吃惊地是，下面的代码看起来挺悬的，事实上还是靠谱的：
 
     for $i (1..10) {
         my @array = somefunc($i);
@@ -292,22 +322,37 @@ much more easily understood constructors C<[]> and C<{}> instead of
 relying upon lexical (or dynamic) scoping and hidden reference-counting to
 do the right thing behind the scenes.
 
+这是因为，相比在编译时申明变量I<per se>，my()更多是在运行时的声明变量。这意味着my()变量在循环里每次都是新的。
+即使I<看起来>每次循环都存入的是相同名称变量的引用，实际上不是。靠这个细微区别，尽管冒着会让所有人看不懂的危险，代码效率会更高，那些很有经验的程序员能看出来。所以我通常反对不要这样教新手。事实上，我不愿意看到在代码里用反斜线操作符（\），给函数传递参数时这么做另当别论。相反，我建议新手和大部分程序员应该使用更容易理解的构造方式C<[]>和C<{}>，而不是在具体环境中依靠语法（或者动态）范围和隐藏的引用-计数来做事情。
+
 In summary:
 
+总结：
+
     $AoA[$i] = [ @array ];	# usually best
+                          	#通常是最好的方式
     $AoA[$i] = \@array;		# perilous; just how my() was that array?
+                       		# 很危险，my()还是那个数组吗？
     @{ $AoA[$i] } = @array;	# way too tricky for most programmers
+                          	# 对于大部分程序员来说还是很难理解的
 
 
 =head1 CAVEAT ON PRECEDENCE
+
+=head1 操作符优先顺序
 X<dereference, precedence> X<dereferencing, precedence>
 
 Speaking of things like C<@{$AoA[$i]}>, the following are actually the
 same thing:
+
+说到像C<@{$AoA[$i]}>的表达式，下面的代码说的都是一回事：
+
 X<< -> >>
 
     $aref->[2][2]	# clear
+                 	# 很清楚
     $$aref[2][2]	# confusing
+                	# 有点晕
 
 That's because Perl's precedence rules on its five prefix dereferencers
 (which look like someone swearing: C<$ @ * % &>) make them bind more
@@ -317,6 +362,10 @@ accustomed to using C<*a[i]> to mean what's pointed to by the I<i'th>
 element of C<a>.  That is, they first take the subscript, and only then
 dereference the thing at that subscript.  That's fine in C, but this isn't C.
 
+这是因为Perl的优先级规则，5个前缀操作符(C<$ @ * % &>，看起来想咒语)比后缀操作符优先级高。
+毫无疑问，C/C++程序员看到这个会颤抖，他们更习惯于使用C<*a[i]>来表示数组C<a>的第I<i'th>个元素的指针。
+也就是说，C/C++会先使用子代码，然后再解引用子代码的值。那是C的做法，但我们现在讲的是Perl。
+
 The seemingly equivalent construct in Perl, C<$$aref[$i]> first does
 the deref of $aref, making it take $aref as a reference to an
 array, and then dereference that, and finally tell you the I<i'th> value
@@ -324,11 +373,18 @@ of the array pointed to by $AoA. If you wanted the C notion, you'd have to
 write C<${$AoA[$i]}> to force the C<$AoA[$i]> to get evaluated first
 before the leading C<$> dereferencer.
 
+这看起来像是Perl里的构造，C<$$aref[$i]>首先对$aref解引用，取得一个数组引用地址，再取得数组，最后找到数组的第I<i>个元素的值，这个元素指向$AoA。如果你想用C的做法，你得这样写C<${$AoA[$i]}>，先获取C<$AoA[$i]>的值然后再用C<$>解引用。
+
 =head1 WHY YOU SHOULD ALWAYS C<use strict>
+
+=head1 为什么总要使用C<use strict>
 
 If this is starting to sound scarier than it's worth, relax.  Perl has
 some features to help you avoid its most common pitfalls.  The best
 way to avoid getting confused is to start every program like this:
+
+这个做法，如果用的效果不咋地，倒像是吓人的，那么放松一下吧。Perl有一些特性帮助你避免最常见的错误。
+最好的方法就是在每一个程序的开头写这么两行：
 
     #!/usr/bin/perl -w
     use strict;
@@ -336,6 +392,8 @@ way to avoid getting confused is to start every program like this:
 This way, you'll be forced to declare all your variables with my() and
 also disallow accidental "symbolic dereferencing".  Therefore if you'd done
 this:
+
+这样的话，Perl会强迫你使用my()声明每一个变量，并且不允许意外的“符号解引用”。如果你这么写：
 
     my $aref = [
 	[ "fred", "barney", "pebbles", "bambam", "dino", ],
@@ -349,9 +407,15 @@ The compiler would immediately flag that as an error I<at compile time>,
 because you were accidentally accessing C<@aref>, an undeclared
 variable, and it would thereby remind you to write instead:
 
+编译器会在I<编译时>提示错误，因为你要访问的是C<@aref>，你只声明了C<$aref>，没声明C<@aref>的话是不能使用这个变量的。
+编译器会提示你该这么写：
+
     print $aref->[2][2]
 
-=head1 DEBUGGING 调试
+=head1 DEBUGGING
+
+=head1 调试
+
 X<data structure, debugging> X<complex data structure, debugging>
 X<AoA, debugging> X<HoA, debugging> X<AoH, debugging> X<HoH, debugging>
 X<array of arrays, debugging> X<hash of arrays, debugging>
@@ -384,7 +448,9 @@ example, given the assignment to $AoA above, here's the debugger output:
 	  2  'elroy'
 	  3  'judy'
 
-=head1 CODE EXAMPLES 示例代码
+=head1 CODE EXAMPLES
+
+=head1 示例代码
 
 Presented with little comment (these will get their own manpages someday)
 here are short code examples illustrating access of various
@@ -392,10 +458,15 @@ types of data structures.
 
 示例代码有少量注释（将来有一天这些会有它们自己的手册）。现在用很短的代码来演示访问不同类型的数据结构。
 
-=head1 ARRAYS OF ARRAYS 多维数组
+=head1 ARRAYS OF ARRAYS
+
+=head1 多维数组
+
 X<array of arrays> X<AoA>
 
-=head2 Declaration of an ARRAY OF ARRAYS 声明多维数组
+=head2 Declaration of an ARRAY OF ARRAYS
+
+=head2 声明多维数组
 
  @AoA = (
         [ "fred", "barney" ],
@@ -403,56 +474,74 @@ X<array of arrays> X<AoA>
         [ "homer", "marge", "bart" ],
       );
 
-=head2 Generation of an ARRAY OF ARRAYS 构造多维数组
+=head2 Generation of an ARRAY OF ARRAYS
 
- # reading from file 从文件逐行读取
+=head2 构造多维数组
+
+ # reading from file
+ # 从文件逐行读取
  while ( <> ) {
      push @AoA, [ split ];
  }
 
- # calling a function 调用函数
+ # calling a function
+ # 调用函数
  for $i ( 1 .. 10 ) {
      $AoA[$i] = [ somefunc($i) ];
  }
 
- # using temp vars 使用临时变量
+ # using temp vars
+ # 使用临时变量
  for $i ( 1 .. 10 ) {
      @tmp = somefunc($i);
      $AoA[$i] = [ @tmp ];
  }
 
- # add to an existing row 向已经存在的多维数组添加新元素
+ # add to an existing row
+ # 向已经存在的多维数组添加新元素
  push @{ $AoA[0] }, "wilma", "betty";
 
-=head2 Access and Printing of an ARRAY OF ARRAYS 访问并打印多维数组
+=head2 Access and Printing of an ARRAY OF ARRAYS
 
- # one element 给一个元素赋值
+=head2 访问并打印多维数组
+
+ # one element
+ # 给一个元素赋值
  $AoA[0][0] = "Fred";
 
- # another element 把另一个元素里的单词变成大写
+ # another element
+ # 把另一个元素里的单词变成大写
  $AoA[1][1] =~ s/(\w)/\u$1/;
 
- # print the whole thing with refs 用引用打印两维数组的全部元素
+ # print the whole thing with refs
+ # 用引用打印两维数组的全部元素
  for $aref ( @AoA ) {
      print "\t [ @$aref ],\n";
  }
 
- # print the whole thing with indices 用索引打印两维数组的全部元素
+ # print the whole thing with indices
+ # 用索引打印两维数组的全部元素
  for $i ( 0 .. $#AoA ) {
      print "\t [ @{$AoA[$i]} ],\n";
  }
 
- # print the whole thing one at a time 打印所有元素，一次打印一个元素
+ # print the whole thing one at a time
+ # 打印所有元素，一次打印一个元素
  for $i ( 0 .. $#AoA ) {
      for $j ( 0 .. $#{ $AoA[$i] } ) {
          print "elt $i $j is $AoA[$i][$j]\n";
      }
  }
 
-=head1 HASHES OF ARRAYS 哈希数组
+=head1 HASHES OF ARRAYS
+
+=head1 哈希数组
+
 X<hash of arrays> X<HoA>
 
-=head2 Declaration of a HASH OF ARRAYS 声明哈希数组
+=head2 Declaration of a HASH OF ARRAYS
+
+=head2 声明哈希数组
 
  %HoA = (
         flintstones        => [ "fred", "barney" ],
@@ -460,51 +549,64 @@ X<hash of arrays> X<HoA>
         simpsons           => [ "homer", "marge", "bart" ],
       );
 
-=head2 Generation of a HASH OF ARRAYS 构造哈希数组
+=head2 Generation of a HASH OF ARRAYS
 
- # reading from file 读取文件，每行格式为A：B C D E，用冒号分割，前面是key，后面用空格分割，多个元素作为value
+=head2 构造哈希数组
+
+ # reading from file
  # flintstones: fred barney wilma dino
+ # 读取文件，每行格式为A：B C D E，用冒号分割，前面是key，后面用空格分割，多个元素作为value
  while ( <> ) {
      next unless s/^(.*?):\s*//;
      $HoA{$1} = [ split ];
  }
 
- # reading from file; more temps 读取同一个文件，使用更多临时变量
+ # reading from file; more temps
  # flintstones: fred barney wilma dino
+ # 读取同一个文件，使用更多临时变量
  while ( $line = <> ) {
      ($who, $rest) = split /:\s*/, $line, 2;
      @fields = split ' ', $rest;
      $HoA{$who} = [ @fields ];
  }
 
- # calling a function that returns a list 调用函数，返回列表
+ # calling a function that returns a list
+ # 调用函数，返回列表
  for $group ( "simpsons", "jetsons", "flintstones" ) {
      $HoA{$group} = [ get_family($group) ];
  }
 
- # likewise, but using temps 类似，但使用了临时变量
+ # likewise, but using temps
+ # 类似，但使用了临时变量
  for $group ( "simpsons", "jetsons", "flintstones" ) {
      @members = get_family($group);
      $HoA{$group} = [ @members ];
  }
 
- # append new members to an existing family 向已有的多维数组追加元素
+ # append new members to an existing family
+ # 向已有的多维数组追加元素
  push @{ $HoA{"flintstones"} }, "wilma", "betty";
 
-=head2 Access and Printing of a HASH OF ARRAYS 访问和打印哈希数组
+=head2 Access and Printing of a HASH OF ARRAYS
 
- # one element 访问一个元素
+=head2 访问和打印哈希数组
+
+ # one element
+ # 访问一个元素
  $HoA{flintstones}[0] = "Fred";
 
- # another element 替换另一个元素的值
+ # another element
+ # 替换另一个元素的值
  $HoA{simpsons}[1] =~ s/(\w)/\u$1/;
 
- # print the whole thing 打印全部
+ # print the whole thing
+ # 打印全部
  foreach $family ( keys %HoA ) {
      print "$family: @{ $HoA{$family} }\n"
  }
 
- # print the whole thing with indices 使用索引打印全部
+ # print the whole thing with indices
+ # 使用索引打印全部
  foreach $family ( keys %HoA ) {
      print "family: ";
      foreach $i ( 0 .. $#{ $HoA{$family} } ) {
@@ -513,12 +615,14 @@ X<hash of arrays> X<HoA>
      print "\n";
  }
 
- # print the whole thing sorted by number of members （按value数组元素个数从大到小）排序并打印
+ # print the whole thing sorted by number of members
+ #（按value数组元素个数从大到小）排序并打印
  foreach $family ( sort { @{$HoA{$b}} <=> @{$HoA{$a}} } keys %HoA ) {
      print "$family: @{ $HoA{$family} }\n"
  }
 
- # print the whole thing sorted by number of members and name （按value数组元素个数从大到小或者key字符升序）排序并打印
+ # print the whole thing sorted by number of members and name
+ #（按value数组元素个数从大到小或者key字符升序）排序并打印
  foreach $family ( sort {
 			    @{$HoA{$b}} <=> @{$HoA{$a}}
 					||
@@ -528,10 +632,15 @@ X<hash of arrays> X<HoA>
      print "$family: ", join(", ", sort @{ $HoA{$family} }), "\n";
  }
 
-=head1 ARRAYS OF HASHES 数组哈希
+=head1 ARRAYS OF HASHES
+
+=head1 数组哈希
+
 X<array of hashes> X<AoH>
 
-=head2 Declaration of an ARRAY OF HASHES 声明数组哈希
+=head2 Declaration of an ARRAY OF HASHES
+
+=head2 声明数组哈希
 
  @AoH = (
         {
@@ -550,10 +659,13 @@ X<array of hashes> X<AoH>
         }
   );
 
-=head2 Generation of an ARRAY OF HASHES 构造数组哈希
+=head2 Generation of an ARRAY OF HASHES
 
- # reading from file 读取文件，每行格式为k1=v1 k2=v2
+=head2 构造数组哈希
+
+ # reading from file
  # format: LEAD=fred FRIEND=barney
+ # 读取文件，每行格式为k1=v1 k2=v2
  while ( <> ) {
      $rec = {};
      for $field ( split ) {
@@ -564,37 +676,46 @@ X<array of hashes> X<AoH>
  }
 
 
- # reading from file 读取文件，没有使用临时变量，用的是环境变量$_
+ # reading from file
  # format: LEAD=fred FRIEND=barney
  # no temp
+ # 读取文件，没有使用临时变量，用的是环境变量$_
  while ( <> ) {
      push @AoH, { split /[\s+=]/ };
  }
 
- # calling a function  that returns a key/value pair list, like 调用函数，返回哈希（key/value）结构，例如lead:fred,daughter:pebbles
+ # calling a function  that returns a key/value pair list, like
  # "lead","fred","daughter","pebbles"
+ # 调用函数，返回哈希（key/value）结构，例如lead:fred,daughter:pebbles
  while ( %fields = getnextpairset() ) {
      push @AoH, { %fields };
  }
 
- # likewise, but using no temp vars 类似的，但没有使用临时变量
+ # likewise, but using no temp vars
+ # 类似的，但没有使用临时变量
  while (<>) {
      push @AoH, { parsepairs($_) };
  }
 
- # add key/value to an element 向一个数组元素增加key/value
+ # add key/value to an element
+ # 向一个数组元素增加key/value
  $AoH[0]{pet} = "dino";
  $AoH[2]{pet} = "santa's little helper";
 
-=head2 Access and Printing of an ARRAY OF HASHES 访问和打印数组哈希
+=head2 Access and Printing of an ARRAY OF HASHES
 
- # one element 给数组元素的一个key赋值
+=head2 访问和打印数组哈希
+
+ # one element
+ # 给数组元素的一个key赋值
  $AoH[0]{lead} = "fred";
 
- # another element 正则替换数组元素的key的值
+ # another element
+ # 正则替换数组元素的key的值
  $AoH[1]{lead} =~ s/(\w)/\u$1/;
 
- # print the whole thing with refs 使用引用打印全部
+ # print the whole thing with refs
+ # 使用引用打印全部
  for $href ( @AoH ) {
      print "{ ";
      for $role ( keys %$href ) {
@@ -603,7 +724,8 @@ X<array of hashes> X<AoH>
      print "}\n";
  }
 
- # print the whole thing with indices 使用索引打印全部
+ # print the whole thing with indices
+ # 使用索引打印全部
  for $i ( 0 .. $#AoH ) {
      print "$i is { ";
      for $role ( keys %{ $AoH[$i] } ) {
@@ -612,17 +734,23 @@ X<array of hashes> X<AoH>
      print "}\n";
  }
 
- # print the whole thing one at a time 打印全部，一次一个key/value
+ # print the whole thing one at a time
+ # 打印全部，一次一个key/value
  for $i ( 0 .. $#AoH ) {
      for $role ( keys %{ $AoH[$i] } ) {
          print "elt $i $role is $AoH[$i]{$role}\n";
      }
  }
 
-=head1 HASHES OF HASHES 哈希的哈希
+=head1 HASHES OF HASHES
+
+=head1 哈希的哈希
+
 X<hash of hashes> X<HoH>
 
-=head2 Declaration of a HASH OF HASHES 声明哈希哈希
+=head2 Declaration of a HASH OF HASHES
+
+=head2 声明哈希哈希
 
  %HoH = (
         flintstones => {
@@ -641,10 +769,13 @@ X<hash of hashes> X<HoH>
 	},
  );
 
-=head2 Generation of a HASH OF HASHES 构造哈希哈希value
+=head2 Generation of a HASH OF HASHES
 
- # reading from file 从文件逐行读取，按冒号分割取出第一级的key和value，按空格分割value取出subkey=subvalue，然后按“=”分割取subkey和subvalue。
+=head2 构造哈希哈希value
+
+ # reading from file 
  # flintstones: lead=fred pal=barney wife=wilma pet=dino
+ # 从文件逐行读取，按冒号分割取出第一级的key和value，按空格分割value取出subkey=subvalue，然后按“=”分割取subkey和subvalue。
  while ( <> ) {
      next unless s/^(.*?):\s*//;
      $who = $1;
@@ -654,7 +785,8 @@ X<hash of hashes> X<HoH>
      }
 
 
- # reading from file; more temps 从文件读取，用了更多临时变量
+ # reading from file; more temps
+ # 从文件读取，用了更多临时变量
  while ( <> ) {
      next unless s/^(.*?):\s*//;
      $who = $1;
@@ -666,18 +798,21 @@ X<hash of hashes> X<HoH>
      }
  }
 
- # calling a function  that returns a key,value hash 调用函数，返回哈希。
+ # calling a function  that returns a key,value hash
+ # 调用函数，返回哈希。
  for $group ( "simpsons", "jetsons", "flintstones" ) {
      $HoH{$group} = { get_family($group) };
  }
 
- # likewise, but using temps 跟上面类似，没有使用临时变量
+ # likewise, but using temps
+ # 跟上面类似，没有使用临时变量
  for $group ( "simpsons", "jetsons", "flintstones" ) {
      %members = get_family($group);
      $HoH{$group} = { %members };
  }
 
- # append new members to an existing family 先给哈希赋值，然后向这个哈希增加成员
+ # append new members to an existing family
+ # 先给哈希赋值，然后向这个哈希增加成员
  %new_folks = (
      wife => "wilma",
      pet  => "dino",
@@ -687,15 +822,20 @@ X<hash of hashes> X<HoH>
      $HoH{flintstones}{$what} = $new_folks{$what};
  }
 
-=head2 Access and Printing of a HASH OF HASHES 访问和打印哈希哈希
+=head2 Access and Printing of a HASH OF HASHES
 
- # one element 给一个key的subkey赋值
+=head2 访问和打印哈希哈希
+
+ # one element
+ # 给一个key的subkey赋值
  $HoH{flintstones}{wife} = "wilma";
 
- # another element 正则替换一个key的subkey的值
+ # another element
+ # 正则替换一个key的subkey的值
  $HoH{simpsons}{lead} =~ s/(\w)/\u$1/;
 
- # print the whole thing 打印全部 key: { subkey= subvalue }
+ # print the whole thing
+ # 打印全部 key: { subkey= subvalue }
  foreach $family ( keys %HoH ) {
      print "$family: { ";
      for $role ( keys %{ $HoH{$family} } ) {
@@ -704,7 +844,8 @@ X<hash of hashes> X<HoH>
      print "}\n";
  }
 
- # print the whole thing  somewhat sorted 按默认排序（quicksort）打印
+ # print the whole thing  somewhat sorted
+ # 按默认排序（quicksort）打印
  foreach $family ( sort keys %HoH ) {
      print "$family: { ";
      for $role ( sort keys %{ $HoH{$family} } ) {
@@ -714,7 +855,8 @@ X<hash of hashes> X<HoH>
  }
 
 
- # print the whole thing sorted by number of members 按成员的成员数量降序打印
+ # print the whole thing sorted by number of members
+ # 按成员的成员数量降序打印
  foreach $family ( sort { keys %{$HoH{$b}} <=> keys %{$HoH{$a}} } keys %HoH ) {
      print "$family: { ";
      for $role ( sort keys %{ $HoH{$family} } ) {
@@ -723,14 +865,17 @@ X<hash of hashes> X<HoH>
      print "}\n";
  }
 
- # establish a sort order (rank) for each role 为每种角色打分排序
+ # establish a sort order (rank) for each role
+ # 为每种角色打分排序
  $i = 0;
  for ( qw(lead wife son daughter pal pet) ) { $rank{$_} = ++$i }
 
- # now print the whole thing sorted by number of members 按成员的成员数量降序打印
+ # now print the whole thing sorted by number of members
+ # 按成员的成员数量降序打印
  foreach $family ( sort { keys %{ $HoH{$b} } <=> keys %{ $HoH{$a} } } keys %HoH ) {
      print "$family: { ";
-     # and print these according to rank order 指定sort排序规则，按角色评分升序打印
+     # and print these according to rank order
+     # 指定sort排序规则，按角色评分升序打印
      for $role ( sort { $rank{$a} <=> $rank{$b} }  keys %{ $HoH{$family} } ) {
          print "$role=$HoH{$family}{$role} ";
      }
@@ -738,10 +883,15 @@ X<hash of hashes> X<HoH>
  }
 
 
-=head1 MORE ELABORATE RECORDS 更详细的数据结构示例
+=head1 MORE ELABORATE RECORDS
+
+=head1 更详细的数据结构示例
+
 X<record> X<structure> X<struct>
 
-=head2 Declaration of MORE ELABORATE RECORDS 声明复杂的数据结构
+=head2 Declaration of MORE ELABORATE RECORDS
+
+=head2 声明复杂的数据结构
 
 Here's a sample showing how to create and use a record whose fields are of
 many different sorts:
@@ -768,14 +918,17 @@ many different sorts:
      $answer = $rec->{THATCODE}->($arg);
      $answer = $rec->{THISCODE}->($arg1, $arg2);
 
-     # careful of extra block braces on fh ref 注意句柄引用的大括号
+     # careful of extra block braces on fh ref
+     # 注意句柄引用的大括号
      print { $rec->{HANDLE} } "a string\n";
 
      use FileHandle;
      $rec->{HANDLE}->autoflush(1);
      $rec->{HANDLE}->print(" a string\n");
 
-=head2 Declaration of a HASH OF COMPLEX RECORDS 声明一个复杂的哈希
+=head2 Declaration of a HASH OF COMPLEX RECORDS
+
+=head2 声明一个复杂的哈希
 
      %TV = (
         flintstones => {
@@ -809,29 +962,34 @@ many different sorts:
          },
       );
 
-=head2 Generation of a HASH OF COMPLEX RECORDS 构造一个复杂的哈希
+=head2 Generation of a HASH OF COMPLEX RECORDS
+
+=head2 构造一个复杂的哈希
 
      # reading from file 读取文件
      # this is most easily done by having the file itself be
      # in the raw data format as shown above.  perl is happy
      # to parse complex data structures if declared as data, so
      # sometimes it's easiest to do that
+     # here's a piece by piece build up
      # 如果把上面的代码当作原始数据存入文件，读取这个文件让Perl来处理是很简单的事情。
      # Perl很高兴处理复杂的数据结构（声明的数据结构），有些情况也是最方便的做法。
-     # here's a piece by piece build up 下面演示如何一点点添加到数据结构里
+     # 下面演示如何一点点添加到数据结构里
      $rec = {};
      $rec->{series} = "flintstones";
      $rec->{nights} = [ find_days() ];
 
      @members = ();
-     # assume this file in field=value syntax 假定文件格式是“成员=值”这样的
+     # assume this file in field=value syntax
+     # 假定文件格式是“成员=值”这样的
      while (<>) {
          %fields = split /[\s=]+/;
          push @members, { %fields };
      }
      $rec->{members} = [ @members ];
 
-     # now remember the whole thing 赋值，记住$rec
+     # now remember the whole thing
+     # 赋值，记住$rec
      $TV{ $rec->{series} } = $rec;
 
      ###########################################################
@@ -846,7 +1004,8 @@ many different sorts:
      # 你想构造一个{kids}字段的值是孩子数组的引用，不需要复制这个数组，也不用考虑更新的问题。
      ###########################################################
      foreach $family (keys %TV) {
-         $rec = $TV{$family}; # temp pointer 临时指针
+         $rec = $TV{$family}; # temp pointer
+         # 临时指针
          @kids = ();
          for $person ( @{ $rec->{members} } ) {
              if ($person->{role} =~ /kid|son|daughter/) {
@@ -861,17 +1020,21 @@ many different sorts:
      # you copied the array, but the array itself contains pointers
      # to uncopied objects. this means that if you make bart get
      # older via
-     # 
+     # 你复制了数组，但数组本身有指向未复制的对象的指针。
+     # 这意味着，如果你想增加bart这个孩子的年龄，你这么做：
 
      $TV{simpsons}{kids}[0]{age}++;
 
      # then this would also change in
+     # 同时会更改
      print $TV{simpsons}{members}[2]{age};
 
      # because $TV{simpsons}{kids}[0] and $TV{simpsons}{members}[2]
      # both point to the same underlying anonymous hash table
+     # 因为$TV{simpsons}{kids}[0]和$TV{simpsons}{members}[2]同时指向同一个匿名哈希数组
 
      # print the whole thing
+     # 打印全部
      foreach $family ( keys %TV ) {
          print "the $family";
          print " is on during @{ $TV{$family}{nights} }\n";
@@ -885,7 +1048,9 @@ many different sorts:
          print "\n";
      }
 
-=head1 Database Ties 数据库绑定
+=head1 Database Ties
+
+=head1 数据库绑定
 
 You cannot easily tie a multilevel data structure (such as a hash of
 hashes) to a dbm file.  The first problem is that all but GDBM and
@@ -895,13 +1060,22 @@ module that does partially attempt to address this need is the MLDBM
 module.  Check your nearest CPAN site as described in L<perlmodlib> for
 source code to MLDBM.
 
-=head1 SEE ALSO 其他参考资料
+把多级数据结构（比如哈希哈希）跟dbm文件绑定不是件容易的事情。第一个问题是除了GDBM和Berkeley
+DB以外，其他的DBM文件都有大小限制，第二个是关于若何在磁盘文件里描述引用信息的问题。
+一个实验性的模块MLDBM，满足部分需求。可以到你最近的CPAN镜像查找MLDBM的源码，
+CPAN镜像的文档请参见L<perlmodlib>。
+
+=head1 SEE ALSO
+
+=head1 其他参考资料
 
 L<perlref>, L<perllol>, L<perldata>, L<perlobj>
 
-=head1 AUTHOR 作者
+=head1 AUTHOR
+
+=head1 作者
 
 Tom Christiansen <F<tchrist@perl.com>>
 
-Last update 最后一次更新 : 
+Last update : 
 Wed Oct 23 04:57:50 MET DST 1996
