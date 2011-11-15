@@ -316,7 +316,9 @@ See L<attributes> and L<Attribute::Handlers>.
 
 C<my>操作符申明的变量列表作用域限制在包围的代码块里，例如，条件语句
 (C<if/unless/elsif/else>)，循环语句(C<for/foreach/while/until/continue>)，
-函数，C<eval>或由C<do/require/use>导入的文件。
+函数，C<eval>或由C<do/require/use>导入的文件。如果C<my>后面跟了多个量，
+必须用圆括号括起来。C<my>列表里的每个元素必须是合法的左值。只有普通的标
+志符可以词法作用域，内置特殊标志符，比如C<$/>目前必须用C<local>。
 
 The C<my> operator declares the listed variables to be lexically
 confined to the enclosing block, conditional (C<if/unless/elsif/else>),
@@ -327,11 +329,19 @@ legal lvalues.  Only alphanumeric identifiers may be lexically
 scoped--magical built-ins like C<$/> must currently be C<local>ized
 with C<local> instead.
 
+不象C<local>操作符创建的动态作用域变量，C<my>声明的词法作用域变量对外部
+是绝对隐藏的，包括任何该作用域内被调用的函数。递归调用也是如此--每此调用
+都会得到新的拷贝。
+
 Unlike dynamic variables created by the C<local> operator, lexical
 variables declared with C<my> are totally hidden from the outside
 world, including any called subroutines.  This is true if it's the
 same subroutine called from itself or elsewhere--every call gets
 its own copy.
+
+这并不意味着C<my>声明的变量在词法作用域内不可见（？？？）。只有动态作用
+域才是如此。例如，下面C<bumpx()>函数能访问词法作用域变量$x，因为C<my>和
+C<sub>存在于同一个作用域，文件作用域。
 
 This doesn't mean that a C<my> variable declared in a statically
 enclosing lexical scope would be invisible.  Only dynamic scopes
@@ -341,6 +351,8 @@ occurred at the same scope, presumably file scope.
 
     my $x = 10;
     sub bumpx { $x++ } 
+
+但是C<eval()>
 
 An C<eval()>, however, can see lexical variables of the scope it is
 being evaluated in, so long as the names aren't hidden by declarations within
