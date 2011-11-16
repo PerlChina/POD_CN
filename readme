@@ -9,12 +9,17 @@ HANG:        停滞
 
 
 翻译指南(草稿)
-1: 待翻译的Pod置于TODO目录下
-2: 翻译未完成且停滞的POD置于HANG目录下
-3: 如果想翻译某个Pod，将其从TODO/HANG移至INPROGRESS，或者直接在
+1: 待翻译的 Pod 置于 TODO 目录下
+2: 翻译未完成且停滞的 POD 置于 HANG 目录下
+3: 如果想翻译某个Pod，将其从 TODO/HANG 移至 INPROGRESS，或者直接在
 INPROGRESS下创建
-4: 如果希望其他人review自己的翻译，翻译过程中不要删除英文，结束后发邮件
-于perlchina@googlegroups.com。等review结束后移除英文部分并将文件移至
+4: 如果希望其他人 review 自己的翻译，翻译过程中不要删除英文，结束后发邮件
+于 perlchina@googlegroups.com。等 review 结束后移除英文部分并将文件移至
 POD/CN
-5: POD/CN下面的文件中不要保留英文原文
+5: POD/CN 下面的文件中不要保留英文原文
 6: 尽量添加译者信息
+7：关于中英文之间的空格
+    一般来说中文和英文混排时，之间应该保留一个空格，比如：
+        中国 Perl 协会
+    英文和中文标点符号之间不需要空格。
+    
