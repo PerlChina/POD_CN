@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 perlunitut - Perl Unicode Tutorial
@@ -12,18 +14,17 @@ things like euro symbols. This means that programmers need new habits. It's
 easy to program Unicode capable software, but it does require discipline to do
 it right.
 
-编程语言只能处理简单字符的日子一去不复返了！现代程序必须能够和那些“滑稽
-的”重音字母以及像欧洲符号一样的字符打交道。这意味着程序员要养成新的习惯
-。编写能够处理Unicode的软件并不困难，但要把这件事情做好做对，的确需要一
-些规范。
-
+编程语言只能处理简单字符的日子一去不复返了！现代程序必须能够和那些“滑稽的”
+重音字母以及像诸如欧洲符号一样的字符打交道。这意味着程序员要形成一种新的习
+性，编写能够处理Unicode的软件并不困难，但需要一些规范，才能把这件事情做好
+做对。
 
 There's a lot to know about character sets, and text encodings. It's probably
 best to spend a full day learning all this, but the basics can be learned in
 minutes. 
 
 要了解字符集和字符编码，需要知道的很多。最好你能花一天时间来学习这些，但
-对于基础知识，几分钟时间就够了。
+对于基础知识，几分钟时间就足够了。
 
 These are not the very basics, though. It is assumed that you already
 know the difference between bytes and characters, and realise (and accept!)
@@ -43,8 +44,8 @@ This tutorial speaks in rather absolute terms, and provides only a limited view
 of the wealth of character string related features that Perl has to offer. For
 most projects, this information will probably suffice.
 
-这篇指南使用通用术语，简单的介绍了Perl提供的，与字符串相关的特性。对于大
-多数项目，这些信息应该已经足够了。
+这篇指南使用通用词汇，简单且有限介的绍了Perl提供的，与字符串相关的特性。对
+于大多数项目，这些信息应该已经足够了。
 
 =head2 Definitions
 
@@ -55,11 +56,11 @@ part of this tutorial. This view may conflict with other information that you
 may have found on the web, but that's mostly because many sources are wrong.
 
 在开头将一些概念弄清楚非常重要。这也是本篇指南最重要的部分。这里的提供的
-信息可能和你之前在网络上找到的相冲突，最可能的原因是：它们都错了。
+信息可能和你之前在网络上找到的相冲突，最可能的原因是：它们大部分都错了。
 
 You may have to re-read this entire section a few times...
 
-你可能要重读这整节几次
+你可能要重读这一整节几次
 
 =head3 Unicode
 
@@ -102,9 +103,9 @@ only one byte per character. All other characters are encoded as two or more
 (up to six) bytes using a complex scheme. Fortunately, Perl handles this for
 us, so we don't have to worry about this.
 
-UTF-8的前128个码位和ASCII编码一样。每个字符代表使用一个字节。所有的其他
-字符都使用一种复杂的方法编码成两个或者更多个（最高6）字节。幸运的是，
-Perl替我们做了这工作，所以我们不必担心这一点。
+UTF-8的前128个码位和ASCII编码一样。每个字符代表一个字节。所有的其他字符都
+使用一种复杂的方法编码成两个或者更多（最高6）字节。幸运的是，Perl替我们做
+了这工作，所以我们不必担心这一点。
 
 =head3 Text strings (character strings)
 
@@ -114,8 +115,8 @@ B<Text strings>, or B<character strings> are made of characters. Bytes are
 irrelevant here, and so are encodings. Each character is just that: the
 character.
 
-B<Text strings>，或者B<character strings>有字符组成。这和字节没关系，和
-编码也没关系。每个字符就是字符而已。
+B<文本串(Text strings)>，或者B<字符串(character strings)>由字符组成。它和
+字节没关系，和编码也没关系。每个字符就是字符而已。
 
 On a text string, you would do things like:
 
@@ -140,7 +141,7 @@ characters, just bytes. All communication with the outside world (anything
 outside of your current Perl process) is done in binary.
 
 B<二进制串(Binary strings)>或B<字节串(byte strings)>由字节组成。这里没有
-字符，自有字节。所有与外界（任何你当前Perl进程之外的东西）的交流都是通过
+字符，只有字节。所有与外界（任何你当前Perl进程之外的东西）的交流都是通过
 二进制串来实现。
 
 On a binary string, you would do things like:
@@ -148,7 +149,7 @@ On a binary string, you would do things like:
 在二进制串上，你可以做这些操作：
 
     my (@length_content) = unpack "(V/a)*", $binary;
-    $binary =~ s/\x00\x0F/\xFF\xF0/;  # 胆子大的 :)
+    $binary =~ s/\x00\x0F/\xFF\xF0/;  # 给胆子大的 :)
     print {$fh} $binary;
     my $byte_count = length $binary;
 
@@ -162,9 +163,9 @@ Some encodings, like the C<iso-8859> ("latin") range, do not support the full
 Unicode standard; characters that can't be represented are lost in the
 conversion.
 
-B<编码>（作动词）是从I<文本>到I<二进制>的转换。要给字符串编码，你必须给出目标编
+B<编码>（作动词）是从I<文本>到I<二进制>的转换。要给文本串编码，你必须给出目标编
 码，比如C<iso-8859>或C<UTF-8>。有些编码并不完全支持万国码规范，比如
-C<iso-8859>("latin")范围。在编码过程中，会丢失那些万国码不能代表的字符，
+C<iso-8859>("latin")范围。那么在编码过程中，会丢失那些万国码不能代表的字符，
 
 =head3 Decoding
 
@@ -175,9 +176,9 @@ know what encoding was used during the encoding phase. And most of all, it must
 be something decodable. It doesn't make much sense to decode a PNG image into a
 text string.
 
-B<解码>是从二进制到字符串的转换。解码时，你必须知道编码时用到的是那种编
-码方式。最重要的是，二进制串必须能被解码。试图把一张PNG图片解码成字符串
-是不现实的。
+B<解码>是从二进制到文本的转换。解码时，你必须知道编码时用到的是哪种编码方
+式。最重要的是，二进制串必须能被解码。试图把一张PNG图片解码成文本串是不现
+实的。
 
 =head3 Internal format
 
@@ -187,8 +188,8 @@ Perl has an B<internal format>, an encoding that it uses to encode text strings
 so it can store them in memory. All text strings are in this internal format.
 In fact, text strings are never in any other format!
 
-Perl有它自己的B<内部格式>，它用这种内部格式来编码字符串，使其能保存到内
-存里面。所有的字符串都是这种内部格式。事实上，它们从来没有其他格式。
+Perl有它自己的B<内部格式>，它用这种内部格式来编码文本串，使其能保存到内
+存里面。所有的文本串都是这种内部格式。事实上，它们从来没有其他格式。
 
 You shouldn't worry about what this format is, because conversion is
 automatically done when you decode or encode.
@@ -202,7 +203,7 @@ automatically done when you decode or encode.
 
 Add to your standard heading the following line:
 
-把下面几行加入到你的标准文件头部中：
+把下面几行加入到你的标准头部中：
 
     use Encode qw(encode decode);
 
@@ -221,11 +222,11 @@ The typical input/output flow of a program is:
 一个程序典型的输入/输出流如下：
 
     1. Receive and decode
-    1. 收取，解码
+    1. 收取和解码
     2. Process
     2. 处理
     3. Encode and output
-    3. 编码，输出
+    3. 编码和输出
 
 If your input is binary, and is supposed to remain binary, you shouldn't decode
 it to a text string, of course. But in all other cases, you should decode it.
@@ -236,7 +237,7 @@ it to a text string, of course. But in all other cases, you should decode it.
 Decoding can't happen reliably if you don't know how the data was encoded. If
 you get to choose, it's a good idea to standardize on UTF-8.
 
-如果你不知道数据是如何被编码的，解码也不会很可靠。你要选择的话，使用
+如果你不知道数据是如何被编码的，解码也不会很可靠。你可以选择的话，使用
 UTF-8标准化是个好主意。
 
     my $foo   = decode('UTF-8', get 'http://example.com/');
@@ -247,7 +248,7 @@ Processing happens as you knew before. The only difference is that you're now
 using characters instead of bytes. That's very useful if you use things like
 C<substr>, or C<length>.
 
-处理过程就像你以前所知一样。唯一的不同是，你在使用字符，而不是字节。当你
+处理过程就像你以前所知一样。唯一的不同是，你使用的是字符，而不是字节。当你
 在使用如C<substr>或C<length>时，这一点非常有用。
 
 It's important to realize that there are no bytes in a text string. Of course,
@@ -288,7 +289,7 @@ known.
 如果你所使用的协议支持设置你所使用的字符编码，那么请使用这个特性。比如
 E-mail和HTTP支持MIME头部，这样你可以使用C<Content-Type>头部。它们还可以
 有C<Content-Length>，用以表示I<字节>的数目。如果已经知道了这个数目，设置
-它永远是个好注意。
+它永远是个好主意。
 
     "Content-Type: text/plain; charset=UTF-8",
     "Content-Length: $byte_count"
@@ -300,7 +301,7 @@ E-mail和HTTP支持MIME头部，这样你可以使用C<Content-Type>头部。它
 Decode everything you receive, encode everything you send out. (If it's text
 data.)
 
-将你收到的所有东西解码，将你发出的所有东西编码。(如果是文本数据的话。)
+将你收到的所有东西解码，将你发出的所有东西编码。（如果是文本数据的话。）
 
 =head1 Q and A (or FAQ)
 
