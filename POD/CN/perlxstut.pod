@@ -3,7 +3,7 @@
 
 =head1 NAME
 
-perlXStut - 写 XSUBs 指南
+perlxstut - 写 XSUBs 指南
 
 =head1 DESCRIPTION
 

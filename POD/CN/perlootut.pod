@@ -2,7 +2,7 @@
 
 =head1 NAME
 
- perl ootut - perl 教程之面向对象编程
+ perlootut - perl 教程之面向对象编程
 
 =head1 描述 
 
