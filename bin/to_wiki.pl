@@ -121,9 +121,7 @@ sub update_perldoc_page {
         $page =~ s/.pod$//i;
         if ($info->{name}) {
             $info->{name} =~ s/$page/*\[\[$page\]\]/;
-            $table->{$page} =
-              $info->{name}
-              . decode('utf8', "[认领人: $info->{translator}]");
+            $table->{$page} = $info->{name};
         }
     }
 
