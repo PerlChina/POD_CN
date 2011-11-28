@@ -2,6 +2,8 @@
 
 perlrun - how to execute the Perl interpreter
 
+perlrun - 如何执行 Perl 解释器
+
 =head1 SYNOPSIS
 
 B<perl>	S<[ B<-sTtuUWX> ]>
@@ -24,11 +26,17 @@ is also possible--see L<perldebug> for details on how to do that.)
 Upon startup, Perl looks for your program in one of the following
 places:
 
+正常情况下，运行 Perl 程序的方式或是将其设为可执行的，或是将源代码文件名
+传递给命令行作为参数。（也可以使用交互式的 Perl 环境--如何使用的详细信息
+请参见 L<perldebug>。）。启动的时候，Perl在以下位置找寻你的程序：
+
 =over 4
 
 =item 1.
 
 Specified line by line via B<-e> or B<-E> switches on the command line.
+
+通过命令行参数 B<-e> 或者 B<-E> 指定的特定行。
 
 =item 2.
 
@@ -36,11 +44,17 @@ Contained in the file specified by the first filename on the command line.
 (Note that systems supporting the C<#!> notation invoke interpreters this
 way. See L<Location of Perl>.)
 
+包含在命令行第一个文件名指定的文件里面。（注意一些系统支持 C(#!) 方式启
+动编译器。参见 L<Location of Perl>。）
+
 =item 3.
 
 Passed in implicitly via standard input.  This works only if there are
 no filename arguments--to pass arguments to a STDIN-read program you
 must explicitly specify a "-" for the program name.
+
+通过标准输入明确的传入。这种情况下，命令行必须没有文件名参数传入。要给从
+标准输入读参数的程序传递参数，你必须使用“-”当做程序名字。
 
 =back
 
