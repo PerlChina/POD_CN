@@ -53,8 +53,8 @@ Passed in implicitly via standard input.  This works only if there are
 no filename arguments--to pass arguments to a STDIN-read program you
 must explicitly specify a "-" for the program name.
 
-通过标准输入明确的传入。这种情况下，命令行必须没有文件名参数传入。要给从
-标准输入读参数的程序传递参数，你必须使用“-”当做程序名字。
+通过标准输入明确的传入。这种情况下，命令行必须没有文件名参数。要给从标准
+输入读参数的程序传递参数，你必须使用“-”当做程序名????。
 
 =back
 
@@ -65,11 +65,21 @@ scans for the first line starting with C<#!> and containing the word
 embedded in a larger message.  (In this case you would indicate the end
 of the program using the C<__END__> token.)
 
+对于第二和第三种方法，Perl从开头解析整个文件。如果你使用了 B<-x> 选项，
+那么 Perl 会扫描文件，寻找以 C<#!> 开始，并包含单词“perl”的第一行，从那
+里开始解析。需要运行包含在一大段信息中的 Perl 程序时，这种用法特别有用。
+（此时，你可以使用 C<__END__> 表明程序的结尾）。
+
 The C<#!> line is always examined for switches as the line is being
 parsed.  Thus, if you're on a machine that allows only one argument
 with the C<#!> line, or worse, doesn't even recognize the C<#!> line, you
 still can get consistent switch behaviour regardless of how Perl was
 invoked, even if B<-x> was used to find the beginning of the program.
+
+C<#!> 行被解析时，其中包含的选项总是会被检查。因此，如果你的机器只允许
+C<#!> 行包含一个参数，或者更糟，它完全不认识这一行，你仍然可以获得这些开
+关选项的行为效果，无论 Perl 在这台机器上是如何被调用的，即使你使用了
+B<-x> 来查询程序开头也是如此。
 
 Because historically some operating systems silently chopped off
 kernel interpretation of the C<#!> line after 32 characters, some
@@ -82,14 +92,29 @@ instead of a complete switch could cause Perl to try to execute
 standard input instead of your program.  And a partial B<-I> switch
 could also cause odd results.
 
+由于历史原因，一些操作系统会无声无息的将 C<#!> 行第32个字符后的部分除去
+，一些选项可能会通过命令行传入，一些可能不会；如果不够小心的话，你甚至
+可能仅仅获得一个“-”而丢失了它后面的字符。因此你应该保证你所有的选项，或
+全部在32个字符之前，或者全部在其之后。大多选项都不关心它们是否被“冗余的”
+处理。但如果仅仅获得了“-”部分，而不是整个选项，可能会导致 Perl 尝试执行
+标准输入而不是你的程序。同时，不完整的 B<-I> 选项也可能会导致奇怪的执行
+结果。
+
 Some switches do care if they are processed twice, for instance
 combinations of B<-l> and B<-0>.  Either put all the switches after
 the 32-character boundary (if applicable), or replace the use of
 B<-0>I<digits> by C<BEGIN{ $/ = "\0digits"; }>.
 
+有一些选项则会关心它们是否被处理了两次。比如 B<-l> 和 B<-0> 的组合。此时
+，或者把所有的选项放置第32字符后，或者用 C<BEGIN{ $/ = "\0digits"; }>代
+替 B<-0>。
+
 Parsing of the C<#!> switches starts wherever "perl" is mentioned in the line.
 The sequences "-*" and "- " are specifically ignored so that you could,
 if you were so inclined, say
+
+当“perl”在文本行中被提及，对 C<#!> 行选项的解析随即开始。“-*”和"- "序列
+会被忽略，因此你想的话，你可以这样做：
 
     #!/bin/sh
     #! -*-perl-*-
@@ -97,8 +122,11 @@ if you were so inclined, say
         if 0;
 
 to let Perl see the B<-p> switch.
+这样 Perl 可以看到 B<-p> 选项。
 
 A similar trick involves the I<env> program, if you have it.
+
+类似的，你可以使用 I<env> 程序，如果你有它的话：
 
     #!/usr/bin/env perl
 
@@ -107,25 +135,43 @@ getting whatever version is first in the user's path.  If you want
 a specific version of Perl, say, perl5.005_57, you should place
 that directly in the C<#!> line's path.
 
+上面的例子间接的获得了 perl 解释器的路径——用户 path 中的第一个 Perl 版本
+。如果你想使用一个特定版本的 Perl， 你应该将其路径直接写在 C<#!> 行中。
+
 If the C<#!> line does not contain the word "perl", the program named after
 the C<#!> is executed instead of the Perl interpreter.  This is slightly
 bizarre, but it helps people on machines that don't do C<#!>, because they
 can tell a program that their SHELL is F</usr/bin/perl>, and Perl will then
 dispatch the program to the correct interpreter for them.
 
+如果 C<#!> 行中没有包含单词“perl”，C<#!>字母之后的程序会被执行。这看起来
+有点奇怪，但对于那些机器上不支持 C<#!> 的人，这很有帮助，因为他们可以告
+诉程序，他们的 SHELL 是 F</usr/bin/perl>，而 Perl 能将程序传递给正确的解
+释器。
+
 After locating your program, Perl compiles the entire program to an
 internal form.  If there are any compilation errors, execution of the
 program is not attempted.  (This is unlike the typical shell script,
 which might run part-way through before finding a syntax error.)
 
+定位了你的程序之后，Perl 将整个程序编译成一种内部格式。如果有编译错误，
+则不会尝试执行程序。（shell 脚本则不一样，它会在找到语法错误之前，运行之
+前的程序部分。）
+
 If the program is syntactically correct, it is executed.  If the program
 runs off the end without hitting an exit() or die() operator, an implicit
 C<exit(0)> is provided to indicate successful completion.
 
+如果程序没有语法错误，那么就会被执行。如果程序不是以 exit() 或 die() 操
+作结束，那么 Perl 会提供一个隐含的 C<exit(0)>，表示程序成功运行。
+
 =head2 #! and quoting on non-Unix systems
-X<hashbang> X<#!>
+
+=head2 非 Unix 系统上的 #!
 
 Unix's C<#!> technique can be simulated on other systems:
+
+Unix的 C<#!> 技术也可以模拟在其他系统上：
 
 =over 4
 
@@ -133,16 +179,22 @@ Unix's C<#!> technique can be simulated on other systems:
 
 Put
 
+将
+
     extproc perl -S -your_switches
 
 as the first line in C<*.cmd> file (B<-S> due to a bug in cmd.exe's
 `extproc' handling).
+
+放在 C<*.cmd> 的第一行（由于 cmd.exe 的一个 bug，在这里需要使用 B<-S>）。
 
 =item MS-DOS
 
 Create a batch file to run your program, and codify it in
 C<ALTERNATE_SHEBANG> (see the F<dosish.h> file in the source
 distribution for more information).
+
+创建一个批处理文件来运行你的程序。
 
 =item Win95/NT
 
