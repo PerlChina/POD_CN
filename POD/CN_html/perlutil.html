@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>perlutil</title>
+		<meta charset="utf-8"/>
+	</head>
+	<body class="pod">
+		<span id="___top"/>
+		<h1><span id="NAME">NAME</span></h1>
+		<p>perlutil - Perl 发行版中的实用程序</p>
+		<h1><span id="DESCRIPTION">DESCRIPTION</span></h1>
+		<p>Perl 发行版除了 Perl 解释器外还在你的系统上安装了一系列的实用程序。其中 一些程序也是被 Perl 发行版本身用于安装过程。本文档将列出所有的这些程 序，解释它们的用途，尽量提供相关模块文档的链接。</p>
+		<h2><span id="(25991)(26723)">&#25991;档</span></h2>
+		<dl><dt><span id="perldoc"/><a href="perldoc.html" class="podlinkpod">perldoc</a></dt><dd><p>Perl 文档的主要界面是 <code>perldoc</code>&#65292;你可能已经知道了。<em>perldoc</em> 可以从当 前目录下的任何文件、系统中安装的模块、或者标准文档（比如本文）中提取 并格式化里面的文档。使用 <code>perldoc &lt;name&gt;</code> 可以得到本文中提到的任 何程序的信息。</p></dd><dt><span id="pod2man_(21644)_pod2text"/><a href="pod2man.html" class="podlinkpod">pod2man</a> 和 <a href="pod2text.html" class="podlinkpod">pod2text</a></dt><dd><p>&#22914;果在终端中运行 <em>perldoc</em>&#65292;通常它是调用 <em>pod2man</em> 来转换 POD（Plain Old Documentation —— 参见 <a href="perlpod.html" class="podlinkpod">perlpod</a>&#65289;为 manpage，然后运行 <em>man</em> 来显 示。如果不能使用 <em>man</em> 命令，就使用 <em>pod2text</em> ，并输出到你喜欢的 pager。</p></dd><dt><span id="pod2html_(21644)_pod2latex"/><a href="pod2html.html" class="podlinkpod">pod2html</a> 和 <a href="pod2latex.html" class="podlinkpod">pod2latex</a></dt><dd><p>&#38500;了这两个，还有两个转换程序：<em>pod2html</em> 能从 POD 中产生 HTML 页 面；<em>pod2latex</em> 能够产生 LaTeX 文件。</p></dd><dt><span id="pod2usage"/><a href="pod2usage.html" class="podlinkpod">pod2usage</a></dt><dd><p>&#22914;果你想知道怎样使用这里描述的程序，<em>pod2usage</em> 可以只抽提出“USAGE”部 分；一些程序会在你用 <code>-help</code> 运行程序时自动对自身调用 <em>pod2usage</em>&#12290;</p></dd><dt><span id="podselect"/><a href="podselect.html" class="podlinkpod">podselect</a></dt><dd><p><em>pod2usage</em> 是 <em>podselect</em> 的一个特例。它是一个从文档的 POD 里抽提出 某个名字的部分。例如，就像程序有“USAGE”部分，Perl 的模块通常有 “SYNOPSIS”部分：<code>podselect -s "SYNOPSIS" ...</code> 将能从一个给定文件中抽 提出这一部分。</p></dd><dt><span id="podchecker"/><a href="podchecker.html" class="podlinkpod">podchecker</a></dt><dd><p>&#22914;果你要用 POD 写你自己的文档，<em>podchecker</em> 程序可以为你的标记检查错 误。</p></dd><dt><span id="splain"/><a href="splain.html" class="podlinkpod">splain</a></dt><dd><p><em>splain</em> 是 <a href="perldiag.html" class="podlinkpod">perldiag</a> 的接口，把你的错误信息粘贴给它，它就会向你解 释。</p></dd><dt><span id="roffitall"/><a href="roffitall.html" class="podlinkpod">roffitall</a></dt><dd><p><code>roffitall</code> 程序不是安装在你的系统中，但是在你 Perl 源文件的 <em>pod/</em> 目录下。它能将发行版中的文档转换成 <em>*roff</em> 格式，然后产生 PostScript 或者文本文件。</p></dd></dl>
+		<h2><span id="(36716)(25442)(22120)">&#36716;换器</span></h2>
+		<p>&#20026;了帮助你将遗留程序转换成 Perl，我们有三个转换过滤器：</p>
+		<dl>
+			<dt><span id="a2p"/><a href="a2p.html" class="podlinkpod">a2p</a></dt>
+			<dd>
+				<p><em>a2p</em> 将 <em>awk</em> 脚本转换成 Perl 程序。例如，<code>a2p -F:</code> 对简单的 <em>awk</em> 脚本 <code>{print $2</code> 将产生一个类似于这样的 Perl 程序：</p>
+				<pre>    while (&lt;&gt;) {
+        ($Fld1,$Fld2) = split(/[:\n]/, $_, 9999);
+        print $Fld2;
+    }</pre>
+			</dd>
+			<dt><span id="s2p"/><a href="s2p.html" class="podlinkpod">s2p</a></dt>
+			<dd>
+				<p>&#21516;样，<em>s2p</em> 将 <em>sed</em> 脚本转换成 Perl 程序。对 <code>s/foo/bar</code> 使用 <em>s2p</em> 将产生类似这样的代码：</p>
+				<pre>    while (&lt;&gt;) {
+        chomp;
+        s/foo/bar/g;
+        print if $printit;
+    }</pre>
+			</dd>
+			<dt><span id="find2perl"/><a href="find2perl.html" class="podlinkpod">find2perl</a></dt>
+			<dd>
+				<p>&#26368;后，<em>find2perl</em> 用 <a href="File.html%3A%3AFind" class="podlinkpod">File::Find</a> 模块将 <code>find</code> 命令转换 成等价的 Perl 命令。例如，<code>find2perl . -user root -perm 4000 -print</code> 为 <code>File::Find</code> 产生这样的调用函数：</p>
+				<pre>    sub wanted {
+        my ($dev,$ino,$mode,$nlink,$uid,$gid);
+        (($dev,$ino,$mode,$nlink,$uid,$gid) = lstat($_)) &amp;&amp;
+        $uid == $uid{'root'}) &amp;&amp;
+        (($mode &amp; 0777) == 04000);
+        print("$name\n");
+    }</pre>
+			</dd>
+		</dl>
+		<p>&#38500;了这些转换其它语言的过滤器，<a href="pl2pm.html" class="podlinkpod">pl2pm</a> 程序能帮你将 Perl 4 旧式 的库转换成新式的 Perl5 模块。</p>
+		<h2><span id="(31995)(32479)(31649)(29702)(21592)">&#31995;统管理员</span></h2>
+		<dl><dt><span id="libnetcfg"/><a href="libnetcfg.html" class="podlinkpod">libnetcfg</a></dt><dd><p>&#36816;行 libnetcfg 命令来显示或者更改 libnet 的配置。</p></dd></dl>
+		<h2><span id="(24320)(21457)">&#24320;发</span></h2>
+		<p>&#36825;里有一系列的程序帮助你开发 Perl 程序，特别是用 C 扩展 Perl。</p>
+		<dl><dt><span id="perlbug"/><a href="perlbug.html" class="podlinkpod">perlbug</a></dt><dd><p>&#25512;荐使用 <em>perlbug</em> 向开发人员提交 perl 解释器本身或者任何标准模块中的 bug。在使用它提交一个 bug 前，请先通读一遍 <em>perlbug</em> 的文档。</p></dd><dt><span id="h2ph"/><a href="h2ph.html" class="podlinkpod">h2ph</a></dt><dd><p>&#22312;存在 XS 系统连接 C 库之前，程序员曾经使用读取 C 头文件的方法得到库中 的常量。你可能还能看到 <code>require 'syscall.ph'</code> 或者相似的代码，这个 <em>.ph</em> 文件是对相应 <em>.h</em> 文件使用 <em>h2ph</em> 程序来创建的。参考 <em>h2ph</em> 的文档来获得如何一次性转化多个头文件的方法。</p></dd><dt><span id="c2ph_(21644)_pstruct"/><a href="c2ph.html" class="podlinkpod">c2ph</a> 和 <a href="pstruct.html" class="podlinkpod">pstruct</a></dt><dd><p><em>c2ph</em> 和 <em>pstruct</em> 都用于将 C 结构和联合声明转换成 Perl 代码，为在 Perl 中使用 C 提供另一种方法。它们事实上是相同的程序，但是调用的方法不 同会有不同的结果。现在，<em>h2xs</em> 逐渐取代了它们。</p></dd><dt><span id="h2xs"/><a href="h2xs.html" class="podlinkpod">h2xs</a></dt><dd><p><em>h2xs</em> 将 C 头文件转换成 XS 模块，然后尽可能的为 C 库和 Perl 模块提供 粘合代码。它对于创建纯 Perl 模块也是很有用的。</p></dd><dt><span id="dprofpp"/><a href="dprofpp.html" class="podlinkpod">dprofpp</a></dt><dd><p>Perl 提供了一个 profiler：<em>Devel::DProf</em> 模块。<em>dprofpp</em> 程序分析这 个 profiler 的输出，然后告诉你哪个函数花费了最多的运行时间。参见 <a href="Devel.html%3A%3ADProf" class="podlinkpod">Devel::DProf</a>&#12290;</p></dd><dt><span id="perlcc"/><a href="perlcc.html" class="podlinkpod">perlcc</a></dt><dd><p><em>perlcc</em> 是实验中的 Perl 编译器的接口。</p></dd></dl>
+		<h2><span id="SEE_ALSO">SEE ALSO</span></h2>
+		<p><a href="perldoc.html" class="podlinkpod">perldoc</a>, <a href="pod2man.html" class="podlinkpod">pod2man</a>, <a href="perlpod.html" class="podlinkpod">perlpod</a>, <a href="pod2html.html" class="podlinkpod">pod2html</a>, <a href="pod2usage.html" class="podlinkpod">pod2usage</a>, <a href="podselect.html" class="podlinkpod">podselect</a>, <a href="podchecker.html" class="podlinkpod">podchecker</a>, <a href="splain.html" class="podlinkpod">splain</a>, <a href="perldiag.html" class="podlinkpod">perldiag</a>, <a href="roffitall.html" class="podlinkpod">roffitall</a>, <a href="a2p.html" class="podlinkpod">a2p</a>, <a href="s2p.html" class="podlinkpod">s2p</a>, <a href="find2perl.html" class="podlinkpod">find2perl</a>, <a href="File.html%3A%3AFind" class="podlinkpod">File::Find</a>, <a href="pl2pm.html" class="podlinkpod">pl2pm</a>, <a href="perlbug.html" class="podlinkpod">perlbug</a>, <a href="h2ph.html" class="podlinkpod">h2ph</a>, <a href="c2ph.html" class="podlinkpod">c2ph</a>, <a href="h2xs.html" class="podlinkpod">h2xs</a>, <a href="dprofpp.html" class="podlinkpod">dprofpp</a>, <a href="Devel.html%3A%3ADProf" class="podlinkpod">Devel::DProf</a>, <a href="perlcc.html" class="podlinkpod">perlcc</a></p>
+		<h1><span id="TRANSLATORS">TRANSLATORS</span></h1>
+		<p>YE Wenbin</p>
+	</body>
+</html>

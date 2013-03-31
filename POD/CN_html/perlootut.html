@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>&#25551;述</title>
+		<meta charset="utf-8"/>
+	</head>
+	<body class="pod">
+		<span id="___top"/>
+		<h1><span id="NAME">NAME</span></h1>
+		<pre> perlootut - perl 教程之面向对象编程</pre>
+		<h1><span id="(25551)(36848)">&#25551;述</span></h1>
+		<p>&#27492;文档提供了一个使用 perl 进行面向对象编程的介绍。开篇是一个简短的关于面向 对象设计概念的概述，之后介绍了<a href="http://search.cpan.org" class="podlinkurl">CPAN</a>&#19978;基于 perl 的 各种 OO 系统。</p>
+		<p>&#40664;认情况下，perl 内置的 OO 系统非常小巧，这使你必须自己做大部分工作。这种 小巧在1994年那个时代是合理的，但自 perl 5.0发布以来，许多通用的模式在 perl OO 系统里面显现。幸运的是，perl 的灵活性允许 perl OO 的生态系统演化和 繁荣。</p>
+		<p>&#22914;果你想知道 perl OO 底层是如何工作的，<a href="perlobj.html" class="podlinkpod">perlobj</a> 提供了详细的信息。</p>
+		<p>&#27492;文档假设你已经掌握了基本的 perl 语法，变量类型，操作符和函数调用。如果你 还不理解这些概念，请先阅读 <a href="perlintro.html" class="podlinkpod">perlintro</a>&#12290;同时你还应该阅读 <a href="perlsyn.html" class="podlinkpod">perlsyn</a>&#65292; <a href="perlop.html" class="podlinkpod">perlop</a>&#65292;<a href="perlsub.html" class="podlinkpod">perlsub</a>&#12290;</p>
+		<h1><span id="(38754)(21521)(23545)(35937)(22522)(30784)">&#38754;向对象基础</span></h1>
+		<p>&#22823;部分面向对象编程系统都有一些通用的概念。你可能已经听说过了一些像“类”，“ 对象”，“方法”和“属性”的术语。理解这些概念，使你能够更加容易的阅读和编写面 向对象代码。即使你已经熟悉了这些，你仍然可以阅读一下这一节，因为这里用 perl 的术语解释了这些概念。</p>
+		<p>perl 的 OO 系统基于类(class-based)。基于类的 OO 是相当通用的，java，C++， C#，Python，Ruby 和很多其他语言都是如此。当然也有其他类型的面向对象。 Javascript 就是使用另一种模式的流行语言，其 OO 系统是基于原型的 (prototype-based)。</p>
+		<h2><span id="(23545)(35937)">&#23545;象</span></h2>
+		<p><b>&#23545;象</b>&#26159;聚合了数据和操作数据的函数的数据结构。对象的数据叫做<b>&#23646;性</b>&#65292;它的 函数叫做<b>&#26041;法</b>&#12290;一个对象可以想象成为一个名词（一个人，一个网络服务，一台 计算机）。</p>
+		<p>&#23545;象代表了一个单一但不连续的物体。比如，它可能代表一个文件。文件对象的属性 可能包括路径，内容，最后修改时间。如果我们创建一个代表 <em>/etc/hostname</em> 文 件的对象，这个文件存放在名为“foo.example.com”的机器上。这个对象的路径就应 该是“/etc/hostname”，内容是“foo\n”，最后修改时间是自 epoch 后1304974868秒 。</p>
+		<p>&#21644;文件相关的方法可以有 <code>rename()</code> 和 <code>write()</code>&#12290;</p>
+		<p>perl 的大部分对象都是哈希，如果你使用我们推荐的 OO 系统，则你完全不必关心 这一点。实际上，最好将对象看做一个不透明的内部数据结构。</p>
+		<h2><span id="(31867)">&#31867;</span></h2>
+		<p><b>&#31867;</b>&#23450;义了一个类别的对象的行为。类是一个类别的名字(比如 "File")，类还定义 了这个类别中的对象的行为。</p>
+		<p>&#25152;有的对象都属于某个特定类。比如，我们的 <em>/etc/hostname</em> 对象属于 <code>File</code> 类。当我们想创建一个特定对象时，我们以它的类开始，<b>&#21019;建</b>&#25110;者<b>&#23454;例化</b>&#19968;个 对象。对象经常被称为一个类的<b>&#23454;例</b>&#12290;</p>
+		<p>&#22312; perl 中，任何包都可以是一个类。一个包是否为类的区别在于这个包是如何被使 用的。以下是我们的 <code>File</code> 类的"类定义"。</p>
+		<pre>  package File;</pre>
+		<p>&#23545;于 perl 来说，没有一个特定的关键字来创建对象，但大部分 CPAN 上的 OO 模块 都使用一个名为 <code>new()</code> 的方法。</p>
+		<pre>  my $hostname = File-&gt;new(
+      path          =&gt; '/etc/hostname',
+      content       =&gt; "foo\n",
+      last_mod_time =&gt; 1304974868,
+  );</pre>
+		<p>(别担心那个<code>-&gt;</code>&#25805;作符，接下来会解释)</p>
+		<h3><span id="Blessing">Blessing</span></h3>
+		<p>&#22914;前所述，大多 perl 的对象都是哈希，但它也可以是任意 perl 数据类型(标量， 数组等)。把一个普通的 perl 数据结构转换成对象的方式是使用 <code>bless</code> 函数对 它进行 <b>Blessing</b>&#12290;</p>
+		<p>&#23613;管我们强烈建议你不要从最底层开始创建你的对象，但你也应该知道 <b>bless</b> 这 个术语。一个 <b>blessed</b> 的数据结构是一个对象。我们有时候会说一个对象被“ blessed into a class”。</p>
+		<p>&#24403;一个变量被 bless 后，<a href="Scalar.html%3A%3AUtil" class="podlinkpod">Scalar::Util</a> 模块中的 <code>blessed</code> 函数可以告诉我 们它的类名。当其参数为对象时，这个函数返回对象的类，否则返回false。</p>
+		<pre>  use Scalar::Util 'blessed';
+
+  print blessed($hash);      # undef
+  print blessed($hostname);  # File</pre>
+		<h3><span id="(26500)(36896)(22120)">&#26500;造器</span></h3>
+		<p><b>&#26500;造器</b>&#29992;来创建新对象。不像其他语言中提供了构造器语法一样，在 perl 中， 一个类的构造器只是一个普通的方法。大部分 perl 的类使用 <code>new</code> 作为构造器的 名字。</p>
+		<pre>  my $file = File-&gt;new(...);</pre>
+		<h2><span id="(26041)(27861)">&#26041;法</span></h2>
+		<p>&#20320;已经知道了<b>&#26041;法</b>&#23601;是操作对象的子程序。你也可以将方法看做对象能做的事 情。如果对象是名词，那么方法就是它的动作(保存，打印，打开)。</p>
+		<p>&#22312; perl 里面，方法是定义类的包里面的子程序。方法的第一个参数总是对象。</p>
+		<pre>  sub print_info {
+      my $self = shift;
+
+      print "This file is at ", $self-&gt;path, "\n";
+  }
+
+  $file-&gt;print_info;
+  # The file is at /etc/hostname</pre>
+		<p>&#26041;法的特殊之处在于它是“怎样被调用的”。箭头操作符<code>-&gt;</code>&#21578;诉 perl 我们在 调用一个方法。</p>
+		<p>Invocant 是一个有意思的名字，它代表箭头左边的部分。Invocant 可以是类名或者 一个对象。我们当然也可以给方法传递其他参数。</p>
+		<pre>  sub print_info {
+      my $self   = shift;
+      my $prefix = shift // "This file is at ";
+
+      print $prefix, ", ", $self-&gt;path, "\n";
+  }
+
+  $file-&gt;print_info("The file is located at ");
+  # The file is located at /etc/hostname</pre>
+		<h2><span id="(23646)(24615)">&#23646;性</span></h2>
+		<p>&#25152;有的类都可以定义它的<b>&#23646;性</b>&#12290;当我们初始化一个对象时，我们可以给属性赋 值。比如，每个<code>&#25991;件</code>&#23545;象有一个路径。属性(attributes)有时也叫做 <b>properties</b></p>
+		<p>Perl 没有用来定义属性的语法。在底层，属性就是类所对应哈希的键，不过你不需 要关注这点。</p>
+		<p>&#25105;们推荐你只通过<b>&#23384;取器</b>&#26469;访问属性。存取器是用来获得或设置属性的值的方法 。我们在<code>print_info()</code> 里面已经看到过了: <code>$self-&gt;path</code></p>
+		<p>&#20320;可能也见过 <b>getter</b> 和 <b>setter</b> 这样的术语。这是两种不同的存取器。 Getter 用来获得属性的值，而 setter 用来设置值。Setter 的另一个叫法是 <b>mutator</b></p>
+		<p>&#23646;性可以定义为只读或者可读写的。只读的属性只能在创建对象的时候被赋值，而可 读写的属性在任何时候都能够更改。</p>
+		<p>&#23646;性的值也可以是另外一个对象。比如，<code>File</code> 类可以返回一个 <a href="DateTime.html" class="podlinkpod">DateTime</a> 对 象代表其最后修改时间，而不是返回数字。</p>
+		<p>&#31867;也可以没有任何公开的可设置的属性。不是每一个类都有属性和方法。</p>
+		<h2><span id="(22810)(24577)">&#22810;态</span></h2>
+		<p><b>&#22810;态</b>&#26159;描述来自不同类的对象公用一个接口的说法。比如，<code>File</code> 和 <code>WebPage</code> 类都可以有 <code>print_content()</code> 方法。对于不同的类，调用这个方法 的输出可能不同，但它们有通用的接口。</p>
+		<p>&#23613;管在很多方面，这两个类都不尽相同，但对于 <code>print_content</code> 方法来说，他们 是一样的。这意味着我们可以在任一类的对象上调用这个 <code>print_content</code> 方法， 而<b>&#25105;们都不需要知道对象属于哪个类!</b></p>
+		<p>&#22810;态是面向对象设计的关键概念之一。</p>
+		<h2><span id="(32487)(25215)">&#32487;承</span></h2>
+		<p><b>&#32487;承</b>&#21487;以让你创建已经存在的类的一个特殊版本。继承创建的新类能够复用原 来类的方法和属性。</p>
+		<p>&#27604;如，我们可以创建一个 <code>File::MP3</code> 类，这个类从 <code>File</code> 继承而来。 <code>File::MP3</code> 是 <code>File</code> 的一个<i>&#26356;加具体</i>&#30340;版本。所有的 mp3 都是文件，但不 是所有的文件都是 mp3。</p>
+		<p>&#25105;们经常把继承关系称为<b>&#29238;-子</b>&#25110;者<code>&#36229;类/子类</code>&#20851;系。有时候我们说子类是一 个父类（比如 <code>File::MP3</code> 类是一个 <code>File</code> 类）。</p>
+		<p><code>File</code> 是 <code>File::MP3</code> 的超类，而 <code>File::MP3</code> 是 <code>FILE</code> 的子类。</p>
+		<pre>  package File::MP3;
+
+  use parent 'File';</pre>
+		<p><a href="parent.html" class="podlinkpod">parent</a> 模块是 perl 让你定义继承关系的诸多方法之一。</p>
+		<p>Perl 允许多重继承，这意味着一个类可以继承自多个父类。尽管这是可能的，但我们强烈 反对这样做。通常，你可以使用<b>&#35282;色(roles)</b>&#26469;做到用多重继承能做到的所有事情 ，而且做法还更加清晰。</p>
+		<p>&#27880;意对一个给定类，给它定义多个子类没有什么关系，这是通用且安全的做法。比 如，我们可以第一 <code>File::MP3::FixedBitrate</code> 和 <code>File::MP3::VariableBitrate</code> 类，用来区分不同类别的 mp3 文件。</p>
+		<h3><span id="(26041)(27861)(37325)(36733)(21644)(26041)(27861)(35299)(26512)">&#26041;法重载和方法解析</span></h3>
+		<p>&#32487;承允许两个类共享代码。默认情况下，父类的所有方法都能在子类中使用。子类 可以提供它自己的实现来<b>&#37325;载</b>&#29238;类的方法。比如，如果我们有一个 <code>File::MP3</code> 对象，它有从 <code>File</code> 而来的 <code>print_info()</code> 方法。</p>
+		<pre>  my $cage = File::MP3-&gt;new(
+      path          =&gt; 'mp3s/My-Body-Is-a-Cage.mp3',
+      content       =&gt; $mp3_data,
+      last_mod_time =&gt; 1304974868,
+      title         =&gt; 'My Body Is a Cage',
+  );
+
+  $cage-&gt;print_info;
+  # The file is at mp3s/My-Body-Is-a-Cage.mp3</pre>
+		<p>&#22914;果我们希望能够打印 mp3 的名字，那么可以重载这个方法。</p>
+		<pre>  package File::MP3;
+
+  use parent 'File';
+
+  sub print_info {
+      my $self = shift;
+
+      print "This file is at ", $self-&gt;path, "\n";
+      print "Its title is ", $self-&gt;title, "\n";
+  }
+
+  $cage-&gt;print_info;
+  # The file is at mp3s/My-Body-Is-a-Cage.mp3
+  # Its title is My Body Is a Cage</pre>
+		<p>&#20915;定使用哪个方法的过程叫做<b>&#26041;法解析</b>&#12290; perl 在这里所做的是：先查看对象的 所属类（这里是 <code>File::MP3</code>&#65289;，如果类定义了这个方法，那么调用这个类的版本 。否者，perl 查看每个父类。对于 <code>File::MP3</code>&#65292;它的父类只有 <code>File</code>&#12290;如果 <code>File::MP3</code> 没有定义这个方法，而 <code>File</code> 定义了，那么 perl 就会调用 <code>File</code> 里面的定义。</p>
+		<p>&#22914;果 <code>File</code> 继承自 <code>DataSource</code>&#65292;而 <code>DataSource</code> 继承自 <code>Thing</code>&#65292;那么 有必要的话，perl 会“源着继承链自下而上”的查找方法定义。</p>
+		<p>&#21487;以明确的在子类中调用父类的方法。</p>
+		<pre>  package File::MP3;
+
+  use parent 'File';
+
+  sub print_info {
+      my $self = shift;
+
+      $self-&gt;SUPER::print_info();
+      print "Its title is ", $self-&gt;title, "\n";
+  }</pre>
+		<p><code>SUPER::</code> 部分告诉 perl ，在 <code>File::MP3</code> 继承链中查找 <code>print_info()</code> 方 法。当在父类中找到了这个方法，则调用之。</p>
+		<p>&#20043;前我们提到了多重继承。它的主要问题就是使方法解析变得非常复杂。更多细节 可以查阅 <a href="#perl_obj" class="podlinkpod">"perl obj"</a>&#12290;</p>
+		<h2><span id="(23553)(35013)">&#23553;装</span></h2>
+		<p><b>&#23553;装</b>&#30340;理念是每个对象都是不透明的。当其他开发人员使用你的类时，他们 不需要知道这个类是<i>&#22914;何</i>&#23454;现的，而只需要知道它做什么就可以了。</p>
+		<p>&#23553;装在许多方面都是非常重要的。首先，它允许你将公用接口和内部实现分开。这 意味着你能在修改实现的同时不破坏接口。</p>
+		<p>&#20854;次，如果很好的封装了类，继承也将变得更加简单。理想情况是，子类使用和父 类相同的接口来访问对象数据。实际上，有时候继承会破坏封装，但好的接口会减 少这种破坏。</p>
+		<p>&#20043;前我们提到大部分 perl 的对象都是用哈希实现的。封装的原则告诉我们不应依赖 于此，而应该使用存取器来获得哈希中的数据。我们接下来推荐的对象系统都能自 动生成存取器。如果你使用它们之中的任意一个，你永远不需要使用哈希来访问对 象。</p>
+		<h2><span id="(32452)(21512)">&#32452;合</span></h2>
+		<p>&#22312;面向对象的代码中，我们经常能看到一个对象指向另外一个对象，这叫做对象 <b>&#32452;合</b>&#65292;或者<b>&#26377;一个</b>&#20851;系。</p>
+		<p>&#20043;前我们提到 <code>File</code> 类的 <code>last_mod_time</code> 方法能够返回一个 <code>DateTime</code> 对 象。这就是一个对象组合的例子。我们也可以更进一步，让 <code>path</code> 和 <code>content</code> 存取器也返回对象。那么 <code>File</code> 就和许多其他的对象进行了组合。</p>
+		<h2><span id="(35282)(33394)_Roles">&#35282;色 <b>Roles</b></span></h2>
+		<p><b>&#35282;色</b>&#26159;一个类“做的事情”，而不是类是什么。对 perl 来说，角色是一个相对较 新，同时也很流行的概念。角色<b>&#24212;用</b>&#20110;类。有时我们说类<b>&#28040;耗</b>&#35282;色。</p>
+		<p>&#35282;色是继承之外，提供多态性的另一种选择。假设我们有两个类，<code>Radio</code> 和 <code>Computer</code>&#12290;这两种物体都有开关键，我们想在类定义中为之建立模型。</p>
+		<p>&#25105;们可以让两个类都继承自同一父类，比如 <code>Machine</code>&#65292;但不是所有的机器都有开 关键。我们也可以建立一个叫 <code>HasOnOffSwitch</code> 的父类，但这也太文绉绉了。 Radio 和 Computers 不是这种父类的特殊体。这个父类定义得有点滑稽。</p>
+		<p>&#36825;就是角色所适合的地方。此时建立一个 <code>HasOnOffSwitch</code> 角色并将之应用于类 显得更加合理。这个角色可以定义如 <code>turn_on()</code> 和 <code>turn_off()</code> 之类的接口 。</p>
+		<p>Perl 并没有关于角色的内置接口。过去，人们都只能别无选择的使用多重继承。而 现在， CPAN 上有许多模块可以让你使用角色。</p>
+		<h2><span id="(20160)(20040)(26102)(20505)(20351)(29992)_OO">&#20160;么时候使用 OO</span></h2>
+		<p>&#38754;向对象并不是所有问题的最好解决方案。在<i>Perl 最佳实践</i>(copyright 2004, Published by O'Reilly Media, Inc.)中，Damian Conway 提供了一个决定OO 是否 是解决你的问题的最好方案的列表。</p>
+		<ul>
+			<li>&#22312;设计的系统非常庞大，或者可能变得庞大。</li>
+			<li>&#25968;据可以聚合成一个明显的结构，特别是每个聚合中有大量数据的时候。</li>
+			<li>&#21508;种类型的数据会形成自然的层次，让继承和多态的使用更为容易。</li>
+			<li>&#20320;有一些数据，许多不同的运算都会应用在那些数据上面。</li>
+			<li>&#20320;必须对一些相关类型的数据做一些相同的通用运算，但是会根据运算所应用于特 定的数据类型而有些细微的差异。</li>
+			<li>&#20320;可能日后要增加新的数据类型。</li>
+			<li>&#25968;据之间的交互最好以运算符表示</li>
+			<li>&#31995;统中个别组件的时间可能随时间而改变</li>
+			<li>&#31995;统设计已经是面向对象的</li>
+			<li>&#26377;很多其他程序员会使用你的代码模块</li>
+		</ul>
+		<h1><span id="perl_OO_(31995)(32479)">perl OO 系统</span></h1>
+		<p>&#23601;像前面所说的一样，perl 内置的 OO 系统非常小巧，也相当灵活。这些年来，在 perl 的内置系统上面，人们开发了许多高级系统，用以提供更多的特性和便利。</p>
+		<p>&#25105;们强烈推荐你使用这些系统中的一个。它们之中即使是最轻巧的实现都能简化许 多重复工作。没有任何理由从零开始用 perl 构建你的类。</p>
+		<p>&#22914;果你对这些系统的内部实现感兴趣，请参阅 <a href="perlobj.html" class="podlinkpod">perlobj</a></p>
+		<h2><span id="Moose">Moose</span></h2>
+		<p><a href="Moose.html" class="podlinkpod">Moose</a>&#33258;称为“perl 5的后现代对象系统”。不要被吓到，“后现代”一词出现 在这里，只是对 Larry 将 perl 称作“第一种后现代计算机语言”的呼应。</p>
+		<p><code>Moose</code>&#25552;供了一个完全而现代化的 OO 系统。对它影响最大的是 Common Lisp 的 面向对象系统，同时它也借鉴了 Smalltalk 和许多其他编程语言的理念。<code>Moose</code> 由 Stevan Little 创建，并从他对 perl 6 OO 的设计工作中获益良多。</p>
+		<p>&#36825;是我们使用 <code>Moose</code> 的 <code>File</code> 类</p>
+		<pre>  package File;
+  use Moose;
+
+  has path          =&gt; ( is =&gt; 'ro' );
+  has content       =&gt; ( is =&gt; 'ro' );
+  has last_mod_time =&gt; ( is =&gt; 'ro' );
+
+  sub print_info {
+      my $self = shift;
+
+      print "This file is at ", $self-&gt;path, "\n";
+  }</pre>
+		<p><code>Moose</code> 提供了许多特性：</p>
+		<ul>
+			<li>Declarative sugar</li>
+			<li>&#22768;明式的语法糖<p><code>Moose</code>&#25552;供了一层声明式的语法糖，用来定义类。这些语法糖只是一系列导出的函 数，它们可以使定义你的类的工作变得更加简单和更具可移植性。你可以描述你的类 是什么，而不用去告诉 perl 怎样实现它。</p><p><code>has()</code> 子函数定义了一个属性，Moose 会自动为其创建存取器。它还帮你创建了 <code>new()</code> 方法。这个构造器知道你所定义的属性，所以你能够在创建一个 <code>File</code> 对象时给它们赋值。</p></li>
+			<li>
+				&#20869;置角色
+				<p><code>Moose</code> 让你像定义类一样定义角色</p>
+				<pre>  package HasOnOfSwitch;
+  use Moose::Role;
+
+  has is_on =&gt; (
+      is  =&gt; 'rw',
+      isa =&gt; 'Bool',
+  );
+
+  sub turn_on {
+      my $self = shift;
+      $self-&gt;is_on(1);
+  }
+
+  sub turn_off {
+      my $self = shift;
+      $self-&gt;is_on(0);
+  }</pre>
+			</li>
+			<li>&#19968;个小型的类型系统<p>&#22312;上面的例子中，创建 <code>is_on</code> 属性的时候，我们给 <code>has()</code> 传递了参数 <code>isa =&gt; 'Bool'</code>&#12290;这是在告诉 <code>Moose</code>&#65292;这个属性必须是一个布尔值。如果我们 给它设置非法值，代码将会抛出错误。</p></li>
+			<li>&#23436;全的内省和控制机制<p>Perl 的内置内省特性及其微小。<code>Moose</code> 在它之上，为你的类建立了一个完全的内 省层，使得你可以问诸如“File 类实现了哪些方法？”之类的问题。它还可以让你 随心所欲的修改你的类。</p></li>
+			<li>&#33258;宿主(Self-hosted)和可扩展性<p><code>Moose</code> 使用自己的内省 API 描述自己。除了这是一个很酷的技巧外，它还意味着 你可以用 <code>Moose</code> 来扩展 <code>Moose</code>&#12290;</p></li>
+			<li>&#20016;富的生态系统<p>&#22312; CPAN 上的<a href="http://search.cpan.org/search?query=MooseX&amp;mode=dist" class="podlinkurl">MooseX</a> 命名空间下，有一个关于 Moose 扩展的丰富的生态系统。此外，CPAN 上很多模块已 经在使用 <code>Moose</code>&#65292;提供了许多可供学习的例子。</p></li>
+			<li>&#26356;多特性<p><code>Moose</code> 是一个非常强大的工具，我们不能在这里介绍它全部的特性。我们鼓励你 从<a href="http.html%3A#%2Fsearch.cpan.org%2F_perl_doc%3FMoose%3A%3AManual" class="podlinkpod">Moose::Manual</a>&#24320;始，通 过阅读 <code>Moose</code> 的文档来学习它，</p></li>
+		</ul>
+		<p>&#24403;然，<code>Moose</code> 也并不完美。</p>
+		<p><code>Moose</code> 会使你的代码载入变慢。<code>Moose</code> 不是一个小型系统，当你定义你的类时，它做了<i>&#22823;量</i>&#20195;码生成工作。这意味着你 的代码在运行期间能尽可能的快，但在你的模块第一次被载入时，必须付出一些时间 代价。</p>
+		<p>&#36825;个载入时间在启动速度重要的时候会成为一个问题。比如命令行脚本，或者必须 在每次执行都被载入的纯 CGI 脚本。</p>
+		<p>&#19981;过先别慌，许多人的确在写命令行工具和其他对启动时间敏感的代码中使用了 <code>Moose</code>&#12290;我们鼓励你先试用一下它，然后再考虑启动速度的问题。</p>
+		<p>&#21516;时 <code>Moose</code> 还有很多其他模块的依赖关系，其中大部分都是小型的独立模块，还 有一部分是为 <code>Moose</code> 而写的。<code>Moose</code> 本身，以及它的一些依赖模块需要用到编译器。如果你想将你的软件安装在一个没有 编译器的系统上面，或者有<i>&#20219;何</i>&#20381;赖关系都是问题，那么 <code>Moose</code> 可能不适合 你。</p>
+		<h3><span id="Mouse">Mouse</span></h3>
+		<p>&#22914;果你使用了 <code>Moose</code> 之后，发现这些问题之一阻止你继续使用它，我们建议你接 下来考虑一下 <code>Mouse</code>&#12290;<code>Mouse</code> 用一个更简单的包，实现了 <code>Moose</code> 功能的一 个子集。对于它所实现的所有特性，其接口和 <code>Moose</code> 是<i>&#23436;全相同的</i>&#65292;这意味 着你可以非常容易的从 <code>Moose</code> 迁移到 <code>Mouse</code>&#12290;</p>
+		<p><code>Mouse</code> 没有实现大部分 <code>Moose</code> 的内省接口，所以在载入你的模块时，它的速 度更快。同时，它的所有依赖模块都由 perl 核心提供，且不需要编译器就能运行。 如果你有编译器，那么<code>Mouse</code> 会用它来编译一些代码，从而加快运行速度。</p>
+		<p>&#26368;后，它还包含了一个 <code>Mouse::Tiny</code> 模块，这个模块将大部分 <code>Mouse</code> 特性打 包到了一个文件里面。把这个文件拷贝到你应用的库目录，你可以轻易打包你的应用 。</p>
+		<p><code>Moose</code> 的作者希望通过充分改进 <code>Moose</code>&#65292;使 <code>Mouse</code> 终有一天能够过时，但 现在 <code>Mouse</code> 仍然提供了除 <code>Moose</code> 之外的一个有价值的选择。</p>
+		<h2><span id="Class::Accessor">Class::Accessor</span></h2>
+		<p><a href="Class.html%3A%3AAccessor" class="podlinkpod">Class::Accessor</a> 完全和 <code>Moose</code> 相反。它提供了很少的特性，也不是自宿主 的。</p>
+		<p>&#20294;它非常简单，完全由 perl 实现，没有非核心依赖，同时还提供了“类 Moose”的 借口。</p>
+		<p>&#23613;管做的不多，它仍然比你从头开始写你的类好。</p>
+		<p>&#36825;是用 <code>Class::Accessor</code> 实现的 <code>File</code> 类：</p>
+		<pre>  package File;
+  use Class::Accessor 'antlers';
+
+  has path          =&gt; ( is =&gt; 'ro' );
+  has content       =&gt; ( is =&gt; 'ro' );
+  has last_mod_time =&gt; ( is =&gt; 'ro' );
+
+  sub print_info {
+      my $self = shift;
+
+      print "This file is at ", $self-&gt;path, "\n";
+  }</pre>
+		<p><code>antlers</code> 导入符告诉 <code>Class::Accessor</code> 我们想用类 <code>Moose</code> 的语法来定义 属性。你唯一可以传给 <code>has</code> 的参数是 <code>is</code>&#12290;当你使用 <code>Class::Accessor</code> 时 ，我推荐你使用类 Moose 的语法，这意味着当你将来决定使用 <code>Moose</code> 时，你可 以更平滑的升级。</p>
+		<p>&#20687; <code>Moose</code> 一样，<code>Class::Accessor</code> 为类自动创建构造器和存取器。</p>
+		<h2><span id="Object::Tiny">Object::Tiny</span></h2>
+		<p>&#26368;后介绍 <code>Object::Tiny</code>&#12290;这个模块就如它的名字，完全没有依赖关系且借口及其 简单。但我们仍然认为比起自己写你的 OO 代码，使用这个模块更加容易。</p>
+		<p>&#20877;一次，这是我们的 <code>File</code> 类：</p>
+		<pre>  package File;
+  use Object::Tiny qw( path content last_mod_time );
+
+  sub print_info {
+      my $self = shift;
+
+      print "This file is at ", $self-&gt;path, "\n";
+  }</pre>
+		<p>&#36825;就足够了!</p>
+		<p>&#20351;用 <code>Object::Tiny</code>&#65292;所有的存取器都是只读的。它为你类生成构造器，也为你定 义的属性生成存取器。</p>
+		<h2><span id="Role::Tiny">Role::Tiny</span></h2>
+		<p>&#25105;们前面提过，角色提供了继承之外的其他选择，但 perl 没有内置的角色支持。如 果你选择使用 Moose，它提供了一个成熟的角色实现。如果你使用其他我们推荐的OO 模块，你仍然可以通过 <a href="Role.html%3A%3ATiny" class="podlinkpod">Role::Tiny</a> 使用角色。</p>
+		<p><code>Role::Tiny</code> 提供了一些Moose 角色系统的特性，但它更加小巧。值得注意的是， 它不支持任何属性定义，所以你必须手动定义它们。但它任然十分有用，并且和 <code>Class::Accessor</code> 或 <code>Object::Tiny</code> 在一起工作得很好。</p>
+		<h2><span id="OO_(31995)(32479)(24635)(32467)">OO 系统总结</span></h2>
+		<p>&#36825;是关于我们提到的模块的一个简单回顾</p>
+		<ul>
+			<li><a href="Moose.html" class="podlinkpod">Moose</a><p><code>Moose</code> 是最好的选择。它提供了许多特性，强大的生态系统，大量的用户基础。 我们也简单的提到了 <code>Mouse</code>&#65292;它是 <code>Moose</code> 的简化版，也是当 Moose 不适合于你 的应用的时候的一个合理选择。</p></li>
+			<li><a href="Class.html%3A%3AAccessor" class="podlinkpod">Class::Accessor</a><p><code>Class::Accessor</code> 做得比 <code>Moose</code> 少许多，如果你发现 Moose 太重量级了，它 是一个很好的选择。这个模块已经存在了相当长时间，而且也通过了很好的测试。它 还提供了一个轻量的 <code>Moose</code> 兼容接口，这使得从<code>Class::Accessor</code> 迁移到 <code>Moose</code> 非常简单。</p></li>
+			<li><a href="Object.html%3A%3ATiny" class="podlinkpod">Object::Tiny</a><p><code>Object::Tiny</code> 是最后的选择。它没有任何依赖，不需要学习任何语法。当你需 要一个超级简单的环境，并且不需要考虑细节的将一些东西捏合起来时，它是一个 不错的选择。</p></li>
+			<li><a href="Role.html%3A%3ATiny" class="podlinkpod">Role::Tiny</a><p>&#22914;果你发现自己在考虑多重继承的时候，可以组合使用 <code>Role::Tiny</code> 和 <code>Class::Accessor</code> 或 <code>Object::Tiny</code>&#12290;如果你使用 <code>Moose</code>&#65292;它提供了自己的 角色实现。</p></li>
+		</ul>
+		<h2><span id="(20854)(20182)_OO_(31995)(32479)">&#20854;他 OO 系统</span></h2>
+		<p>&#38500;了这里提到的 OO 系统外，CPAN 上还有成堆的相关模块。当你在使用别人的代码时 ，很有可能就会碰到它们。</p>
+		<p>&#20854;次，还有许多代码使用 perl 的内置 OO 特性“手动”的实现它自己的 OO。如果你 需要维护这种代码，你必须阅读 <a href="perlobj.html" class="podlinkpod">perlobj</a>&#65292;理解 perl 的内置 OO 是如何工作的 。</p>
+		<h1><span id="(24635)(32467)">&#24635;结</span></h1>
+		<p>&#23601;像我们前面所说，perl 轻量的 OO 系统使得 CPAN 上面存在大量的 OO 模块。尽管你 仍然可以选择自己手动编写你的类，但在现在，2011，你没有任何理由要去那样做。</p>
+		<p>&#23545;于小项目，<a href="Object.html%3A%3ATiny" class="podlinkpod">Object::Tiny</a> 和 <a href="Class.html%3A%3AAccessor" class="podlinkpod">Class::Accessor</a> 都提供了一个轻量的对象系 统，能够解决你的基本问题。</p>
+		<p>&#23545;于更大的项目，<a href="Moose.html" class="podlinkpod">Moose</a> 提供了丰富的特性，使你能够关注在业务逻辑层面上。</p>
+		<p>&#25105;们鼓励你使用并测试这些模块，<a href="Moose.html" class="podlinkpod">Moose</a>&#65292;<a href="Class.html%3A%3AAccessor" class="podlinkpod">Class::Accessor</a>&#65292; <a href="Object.html%3A%3ATiny" class="podlinkpod">Object::Tiny</a>&#65292;然后再决定哪个适合于你。</p>
+		<h1><span id="TRANSLATORS">TRANSLATORS</span></h1>
+		<p>Woosley Xu <code>woosley.xu@gmail.com</code></p>
+	</body>
+</html>

@@ -1,0 +1,714 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>perlembed</title>
+		<meta charset="utf-8"/>
+	</head>
+	<body class="pod">
+		<span id="___top"/>
+		<h1><span id="NAME">NAME</span></h1>
+		<p>perlembed - 在 C 程序中嵌入 perl</p>
+		<h1><span id="DESCRIPTION">DESCRIPTION</span></h1>
+		<h2><span id="(23548)(35328)">&#23548;言</span></h2>
+		<p>&#20320;是想要：</p>
+		<dl><dt><span id="(22312)_Perl_(20013)(20351)(29992)_C(65311)"><b>&#22312; Perl 中使用 C？</b></span></dt><dd><p>&#38405;读 <a href="perlxstut.html" class="podlinkpod">perlxstut</a>&#12289;<a href="perlxs.html" class="podlinkpod">perlxs</a>&#12289;<a href="h2xs.html" class="podlinkpod">h2xs</a>&#12289;<a href="perlguts.html" class="podlinkpod">perlguts</a> 和 <a href="perlapi.html" class="podlinkpod">perlapi</a>&#12290;</p></dd><dt><span id="(22312)_Perl_(20013)(20351)(29992)_Unix_(31243)(24207)(65311)"><b>&#22312; Perl 中使用 Unix 程序？</b></span></dt><dd><p>&#38405;读反引用符（back-quote）和 L &lt;perlfunc&gt; 中的 <code>system</code> 以及 <code>exec</code>&#12290;</p></dd><dt><span id="(22312)_Perl_(20013)(20351)(29992)_Perl(65311)"><b>&#22312; Perl 中使用 Perl？</b></span></dt><dd><p>&#38405;读 <a href="perlfunc.html#do" class="podlinkpod">"do" in perlfunc</a>&#12289;<a href="perlfunc.html#eval" class="podlinkpod">"eval" in perlfunc</a>&#12289;<a href="perlfunc.html#require" class="podlinkpod">"require" in perlfunc</a> 以及 <a href="perlfunc.html#use" class="podlinkpod">"use" in perlfunc</a>&#12290;</p></dd><dt><span id="(22312)_C_(20013)(20351)(29992)_C(65311)"><b>&#22312; C 中使用 C？</b></span></dt><dd><p>&#37325;新考虑一下你的设计。</p></dd><dt><span id="(22312)_C_(20013)(20351)(29992)_Perl(65311)"><b>&#22312; C 中使用 Perl？</b></span></dt><dd><p>&#35831;继续……</p></dd></dl>
+		<h2><span id="(36335)(26631)">&#36335;标</span></h2>
+		<ul>
+			<li>&#32534;译你的 C 程序</li>
+			<li>&#22312;你的 C 程序中加入一个 Perl 解释器</li>
+			<li>&#22312; C 程序中调用一个 Perl 函数</li>
+			<li>&#22312; C 程序中对一个 Perl 语句求值</li>
+			<li>&#22312; C 程序中进行 Perl 模式匹配和替换</li>
+			<li>&#22312; C 程序中修改 Perl 参数栈</li>
+			<li>&#20445;持一个持久的解释器</li>
+			<li>&#20445;持多个解释器实例</li>
+			<li>&#22312; C 程序中使用 Perl 模块，模块本身使用 C 库</li>
+			<li>&#22312; Win32 下内嵌 Perl</li>
+		</ul>
+		<h2><span id="(32534)(35793)(20320)(30340)_C_(31243)(24207)">&#32534;译你的 C 程序</span></h2>
+		<p>&#20320;不是唯一一个在编译本文档的例子时遇到困难的。一个重要规则是：用编译你的 Perl 相同规则来编译程序（对不起，对你大声喊了）。</p>
+		<p>&#27599;个使用 Perl 的 C 程序都必须链接到 <i>perl 库</i>&#12290;<i>perl 库</i> 是 什么？Perl 本身是用 C 来写的，perl library 是一系列编译过的 C 程序，这 些将用于创建你的可执行 perl 程序（<i>/usr/bin/perl</i> 或者等价的东西）。 （推论：除非 Perl 是在你的机器上编译的，或者合适安装的，否则你将不能在 C 程序中使用 Perl——这也是为什么你不应该从另一台机器中复制 Perl 的可执 行程序而不复制 <i>lib</i> 目录。）</p>
+		<p>&#24403;你在 C 中使用 Perl 时，你的 C 程序将（通常是这样）分配、运行然后释放 一个 <i>PerlInterpreter</i> 对象，这个对象是在 perl 库中定义的。</p>
+		<p>&#22914;果你的 Perl 足够新，包含了本文档（版本 5.002 或者更新的），那么 perl 库（还有必须的 <i>EXTERN.h</i> 和 <i>perl.h</i>&#65289;将在看上去像这样的目录中：</p>
+		<pre>    /usr/local/lib/perl5/your_architecture_here/CORE</pre>
+		<p>&#25110;者可能就是</p>
+		<pre>    /usr/local/lib/perl5/CORE</pre>
+		<p>&#25110;者可能像这样</p>
+		<pre>    /usr/opt/perl5/CORE</pre>
+		<p>&#25191;行这样的语句可以找到 CORE：</p>
+		<pre>    perl -MConfig -e 'print $Config{archlib}'</pre>
+		<p>&#36825;是在我的 Linux 机器上编译下一节中例子 <a href="#Adding_a_Perl_interpreter_to_your_C_program" class="podlinkpod">"Adding a Perl interpreter to your C program"</a> 的方法：</p>
+		<pre>    % gcc -O2 -Dbool=char -DHAS_BOOL -I/usr/local/include
+    -I/usr/local/lib/perl5/i586-linux/5.003/CORE
+    -L/usr/local/lib/perl5/i586-linux/5.003/CORE
+    -o interp interp.c -lperl -lm</pre>
+		<p>&#65288;就这一行。）在我的 DEC Alpha 使用旧的 5.003_05，这个“咒语”有一点不同：</p>
+		<pre>    % cc -O2 -Olimit 2900 -DSTANDARD_C -I/usr/local/include
+    -I/usr/local/lib/perl5/alpha-dec_osf/5.00305/CORE
+    -L/usr/local/lib/perl5/alpha-dec_osf/5.00305/CORE -L/usr/local/lib
+    -D__LANGUAGE_C__ -D_NO_PROTO -o interp interp.c -lperl -lm</pre>
+		<p>&#24590;样知道应该加上什么呢？假定你的 Perl 中在 5.001 之后，执行 <code>perl -V</code> 命令，特别要注意“cc”和“ccflags”信息。</p>
+		<p>&#20320;必须选择合适的编译器（<i>cc</i>&#12289;<i>gcc</i> 等等）。在你的机器上：<code>perl -MConfig -e 'print $Config{cc}'</code> 将告诉你要使用什么。</p>
+		<p>&#20320;还要为你的机器选择合适的库目录（<i>/usr/local/lib/...</i>&#65289;。如果你的编 译器抱怨某个函数没有定义，或者它找不到 <i>-lperl</i>&#65292;这时你需要更改在 <code>-L</code> 之后的路径。如果它抱怨找不到 <i>EXTERN.h</i> 和 <i>perl.h</i>&#65292;你需要更 改在 <code>-I</code> 之后的路径。</p>
+		<p>&#20320;可能还要加上一些额外的库。加什么呢？可能是用下面语句输出的那些：</p>
+		<pre>   perl -MConfig -e 'print $Config{libs}'</pre>
+		<p>&#22914;果你的 perl 库配置是适当的，已经安装了 <b>ExtUtils::Embed</b> 模块，它会 为你决定所有的这些信息：</p>
+		<pre>   % cc -o interp interp.c `perl -MExtUtils::Embed -e ccopts -e ldopts`</pre>
+		<p>&#22914;果 <b>ExtUtils::Embed</b> 模块不是你的 Perl 发行版的一部分，你可以从 http://www.perl.com/perl/CPAN/modules/by-module/ExtUtils/ 获得。（如果本文档是来自你的 Perl 发行版，那你用的是 5.004 或者更好， 你就已经有这个模块了。）</p>
+		<p>CPAN 上 <b>ExtUtils::Embed</b> 套装也包含本文档例子的所有源代码，测试，额 外的例子以及其它可能有用的信息。</p>
+		<h2><span id="(22312)_C_(31243)(24207)(20013)(21152)(20837)_Perl_(35299)(37322)(22120)">&#22312; C 程序中加入 Perl 解释器</span></h2>
+		<p>&#22312;某种意义上说，perl（这里指 C 程序）是一个内嵌 Perl（这里指语言）的一 个很好的例子。所以我将用包含在发行版源文件中的 <i>miniperlmain.c</i> 来演 示。这是一个拙劣的、不可移植的 <i>miniperlmain.c</i> 版本，但是包含了内嵌 的本质：</p>
+		<pre>    #include &lt;EXTERN.h&gt;               /* from the Perl distribution     */
+    #include &lt;perl.h&gt;                 /* from the Perl distribution     */
+
+    static PerlInterpreter *my_perl;  /***    The Perl interpreter    ***/
+
+    int main(int argc, char **argv, char **env)
+    {
+        PERL_SYS_INIT3(&amp;argc,&amp;argv,&amp;env);
+        my_perl = perl_alloc();
+        perl_construct(my_perl);
+        PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
+        perl_parse(my_perl, NULL, argc, argv, (char **)NULL);
+        perl_run(my_perl);
+        perl_destruct(my_perl);
+        perl_free(my_perl);
+        PERL_SYS_TERM();
+    }</pre>
+		<p>&#27880;意，我们没有用到 <code>env</code> 指针。通常只是作为 <code>perl_parse</code> 的最后一个 参数提供给它。这里 <code>env</code> 用 <code>NULL</code> 代替了，表示使用当前的环境。 PERL_SYS_INIT3() 和 PERL_SYS_TERM() 宏为 Perl 解释器的运行提供了必要 的、系统特定的 C 运行环境。由于 PERL_SYS_INIT3() 可能修改 <code>env</code>&#65292;所 有最好提供 perl_parse() 一个 <code>env</code> 参数。</p>
+		<p>&#29616;在编译成可执行程序（我称之为 <i>interp.c</i>&#65289;：</p>
+		<pre>    % cc -o interp interp.c `perl -MExtUtils::Embed -e ccopts -e ldopts`</pre>
+		<p>&#22312;成功编译后，你就可以用 <i>interp</i> 就像 perl 本身一样：</p>
+		<pre>    % interp
+    print "Pretty Good Perl \n";
+    print "10890 - 9801 is ", 10890 - 9801;
+    &lt;CTRL-D&gt;
+    Pretty Good Perl
+    10890 - 9801 is 1089</pre>
+		<p>&#25110;者</p>
+		<pre>    % interp -e 'printf("%x", 3735928559)'
+    deadbeef</pre>
+		<p>&#21487;以在你的 C 程序中读入和执行 Perl 语句，只需要在调用 <i>perl_run</i> 前放 置文件名在 <i>argv[1]</i> 中。</p>
+		<h2><span id="(22312)_C_(31243)(24207)(20013)(35843)(29992)_Perl_(20989)(25968)">&#22312; C 程序中调用 Perl 函数</span></h2>
+		<p>&#35201;调用单个 Perl 函数，你可以使用任何一个在 <a href="perlcall.html" class="podlinkpod">perlcall</a> 中介绍的 <b>call_*</b> 函数。 在这个例子中，我们使用 <code>all_argv</code>&#12290;</p>
+		<p>&#19979;面显示一个我称为 <i>showtime.c</i> 的程序：</p>
+		<pre>    #include &lt;EXTERN.h&gt;
+    #include &lt;perl.h&gt;
+
+    static PerlInterpreter *my_perl;
+
+    int main(int argc, char **argv, char **env)
+    {
+        char *args[] = { NULL };
+        PERL_SYS_INIT3(&amp;argc,&amp;argv,&amp;env);
+        my_perl = perl_alloc();
+        perl_construct(my_perl);
+
+        perl_parse(my_perl, NULL, argc, argv, NULL);
+        PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
+
+        /*** skipping perl_run() ***/
+
+        call_argv("showtime", G_DISCARD | G_NOARGS, args);
+
+        perl_destruct(my_perl);
+        perl_free(my_perl);
+        PERL_SYS_TERM();
+    }</pre>
+		<p>&#36825;里 <i>showtime</i> 是一个没有参数的 Perl 函数（就是 <i>G_NOARGS</i>&#65289;，而且 忽略一返回值（就是 <i>G_DISCARD</i>&#65289;。在 <a href="perlcall.html" class="podlinkpod">perlcall</a> 中有讨论这些以及其它 标签。</p>
+		<p>&#25105;在一个称为 <i>showtime.pl</i> 文件中定义这个 <i>showtime</i> 函数：</p>
+		<pre>    print "I shan't be printed.";
+
+    sub showtime {
+        print time;
+    }</pre>
+		<p>&#24456;简单。现在编译并运行：</p>
+		<pre>    % cc -o showtime showtime.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+
+    % showtime showtime.pl
+    818284590</pre>
+		<p>&#20135;生从 1970 年 1 月 1 日（Unix 纪元的开始）到现在的秒数，这是我写这句 话的时间。</p>
+		<p>&#22312;这个特殊例子中，我们不必调用 <i>perl_run</i>&#65292;因为我们设置了 PL_exit_flag PERL_EXIT_DESTRUCT_END，这将在 perl_destruct 中执行 END 块。</p>
+		<p>&#22914;果你想要传递参数给 Perl 函数，你可以在以 <code>NULL</code> 结尾的 <code>args</code> 列表 中加入字符串传递给 <i>call_argv</i>&#12290;对于其它数据类型，或者要检查返回值类 型，你需要操作 Perl 参数栈。在 <a href="#Fiddling_with_the_Perl_stack_from_your_C_program" class="podlinkpod">"Fiddling with the Perl stack from your C program"</a> 中演示了这个过程。</p>
+		<h2><span id="(22312)_C_(31243)(24207)(20013)(23545)_Perl_(35821)(21477)(27714)(20540)">&#22312; C 程序中对 Perl 语句求值</span></h2>
+		<p>Perl 提供两个 API 函数来对一小段 Perl 代码进行求值。这就是 <a href="perlapi.html#eval_sv" class="podlinkpod">"eval_sv" in perlapi</a> 和 <a href="perlapi.html#eval_pv" class="podlinkpod">"eval_pv" in perlapi</a>&#12290;</p>
+		<p>&#22312; C 程序中只有这两个函数，你可以执行一段 Perl 代码。你的代码可以任意 长，可以包含多个语句，你可以用 <a href="perlfunc.html#use" class="podlinkpod">"use" in perlfunc</a>&#12289;<a href="perlfunc.html#require" class="podlinkpod">"require" in perlfunc</a>&#12289; 和 <a href="perlfunc.html#do" class="podlinkpod">"do" in perlfunc</a> 来引入一个 Perl 文件。</p>
+		<p><i>eval_pv</i> 可以对单个的 Perl 字符串求值，然后可以提取出变量转换为 C 类 型。下面这个程序 <i>string.c</i> 执行三个 Perl 字符串，第一个提取出一个 <i>int</i> 变量，第二个提取 <code>float</code> 变量，第三个提取 <code>char *</code> 变量。</p>
+		<pre>   #include &lt;EXTERN.h&gt;
+   #include &lt;perl.h&gt;
+
+   static PerlInterpreter *my_perl;
+
+   main (int argc, char **argv, char **env)
+   {
+       STRLEN n_a;
+       char *embedding[] = { "", "-e", "0" };
+
+       PERL_SYS_INIT3(&amp;argc,&amp;argv,&amp;env);
+       my_perl = perl_alloc();
+       perl_construct( my_perl );
+
+       perl_parse(my_perl, NULL, 3, embedding, NULL);
+       PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
+       perl_run(my_perl);
+
+       /** Treat $a as an integer **/
+       eval_pv("$a = 3; $a **= 2", TRUE);
+       printf("a = %d\n", SvIV(get_sv("a", FALSE)));
+
+       /** Treat $a as a float **/
+       eval_pv("$a = 3.14; $a **= 2", TRUE);
+       printf("a = %f\n", SvNV(get_sv("a", FALSE)));
+
+       /** Treat $a as a string **/
+       eval_pv("$a = 'rekcaH lreP rehtonA tsuJ'; $a = reverse($a);", TRUE);
+       printf("a = %s\n", SvPV(get_sv("a", FALSE), n_a));
+
+       perl_destruct(my_perl);
+       perl_free(my_perl);
+       PERL_SYS_TERM();
+   }</pre>
+		<p>&#25152;有在名字中含有 <i>sv</i> 的奇怪函数都是为了协助将 Perl 标量转换为 C 类型。 这在 <a href="perlguts.html" class="podlinkpod">perlguts</a> 和 <a href="perlapi.html" class="podlinkpod">perlapi</a> 中有描述。</p>
+		<p>&#22914;果你编译并运行 <i>string.c</i>&#65292;你可以用 <i>SvIV()</i> 创建一个 <code>int</code>&#65292;<i>SvNV()</i> 创建一个 <code>float</code>&#65292;<i>SvPV()</i> 创建一个字符串，这样可 以看到结果。</p>
+		<pre>   a = 9
+   a = 9.859600
+   a = Just Another Perl Hacker</pre>
+		<p>&#22312;上面的例子中，我们创建了一个全局变量来临时保存求值后计算的结果。也可 以，并在大多数情况下最好用 <i>eval_pv()</i> 的返回值。例如：</p>
+		<pre>   ...
+   STRLEN n_a;
+   SV *val = eval_pv("reverse 'rekcaH lreP rehtonA tsuJ'", TRUE);
+   printf("%s\n", SvPV(val,n_a));
+   ...</pre>
+		<p>&#36825;样不用创建一个全局变量，可以避免污染名字空间，也同样使代码简化。</p>
+		<h2><span id="(22312)_C_(31243)(24207)(20013)(36827)(34892)_Perl_(27169)(24335)(21305)(37197)(21644)(26367)(25442)">&#22312; C 程序中进行 Perl 模式匹配和替换</span></h2>
+		<p><i>eval_sv()</i> 函数可以对 Perl 代码字符串求值，所以我们可以定义一些函数 专门进行匹配和替换：<i>match()</i>&#65292;<i>substitute()</i> 和 <i>matches()</i>&#12290;</p>
+		<pre>   I32 match(SV *string, char *pattern);</pre>
+		<p>&#20551;定有一个字符串和一个模式（例如 <code>m/clasp/</code> 或者 <code>/\b\w*\b/</code>&#65292;在你的 C 程序中可能是这样的 "/\\b\\w*\\b/"）。如果字符串匹配一个模式则返回 1，否则返回 0。</p>
+		<pre>   int substitute(SV **string, char *pattern);</pre>
+		<p>&#20551;定有一个指向 <code>SV</code> 的指针和 <code>=~</code> 操作符（例如 <code>s/bob/robert/g</code> 或 者 <code>tr[A-Z][a-z]</code>&#65289;，substitute() 根据这个操作符修改 <code>SV</code>&#65292;返回替换 操作的次数。</p>
+		<pre>   int matches(SV *string, char *pattern, AV **matches);</pre>
+		<p>&#20551;定有一个 <code>SV</code>&#65292;一个模式和一个指向一个空 <code>AV</code> 的指针，match() 在一 个列表上下文中对 <code>$string =~ $pattern</code> 求值，在 <i>matches</i> 中填充数 组，返回匹配的数目。</p>
+		<p>&#36825;是一个使用了三个函数的样例，<i>match.c</i>&#65288;过长的行折叠了）：</p>
+		<pre> #include &lt;EXTERN.h&gt;
+ #include &lt;perl.h&gt;
+
+ static PerlInterpreter *my_perl;
+
+ /** my_eval_sv(code, error_check)
+ ** kinda like eval_sv(), 
+ ** but we pop the return value off the stack 
+ **/
+ SV* my_eval_sv(SV *sv, I32 croak_on_error)
+ {
+     dSP;
+     SV* retval;
+     STRLEN n_a;
+
+     PUSHMARK(SP);
+     eval_sv(sv, G_SCALAR);
+
+     SPAGAIN;
+     retval = POPs;
+     PUTBACK;
+
+     if (croak_on_error &amp;&amp; SvTRUE(ERRSV))
+        croak(SvPVx(ERRSV, n_a));
+
+     return retval;
+ }
+
+ /** match(string, pattern)
+ **
+ ** Used for matches in a scalar context.
+ **
+ ** Returns 1 if the match was successful; 0 otherwise.
+ **/
+
+ I32 match(SV *string, char *pattern)
+ {
+     SV *command = NEWSV(1099, 0), *retval;
+     STRLEN n_a;
+
+     sv_setpvf(command, "my $string = '%s'; $string =~ %s",
+              SvPV(string,n_a), pattern);
+
+     retval = my_eval_sv(command, TRUE);
+     SvREFCNT_dec(command);
+
+     return SvIV(retval);
+ }
+
+ /** substitute(string, pattern)
+ **
+ ** Used for =~ operations that modify their left-hand side (s/// and tr///)
+ **
+ ** Returns the number of successful matches, and
+ ** modifies the input string if there were any.
+ **/
+
+ I32 substitute(SV **string, char *pattern)
+ {
+     SV *command = NEWSV(1099, 0), *retval;
+     STRLEN n_a;
+
+     sv_setpvf(command, "$string = '%s'; ($string =~ %s)",
+              SvPV(*string,n_a), pattern);
+
+     retval = my_eval_sv(command, TRUE);
+     SvREFCNT_dec(command);
+
+     *string = get_sv("string", FALSE);
+     return SvIV(retval);
+ }
+
+ /** matches(string, pattern, matches)
+ **
+ ** Used for matches in a list context.
+ **
+ ** Returns the number of matches,
+ ** and fills in **matches with the matching substrings
+ **/
+
+ I32 matches(SV *string, char *pattern, AV **match_list)
+ {
+     SV *command = NEWSV(1099, 0);
+     I32 num_matches;
+     STRLEN n_a;
+
+     sv_setpvf(command, "my $string = '%s'; @array = ($string =~ %s)",
+              SvPV(string,n_a), pattern);
+
+     my_eval_sv(command, TRUE);
+     SvREFCNT_dec(command);
+
+     *match_list = get_av("array", FALSE);
+     num_matches = av_len(*match_list) + 1; /** assume $[ is 0 **/
+
+     return num_matches;
+ }
+
+ main (int argc, char **argv, char **env)
+ {
+     char *embedding[] = { "", "-e", "0" };
+     AV *match_list;
+     I32 num_matches, i;
+     SV *text;
+     STRLEN n_a;
+
+     PERL_SYS_INIT3(&amp;argc,&amp;argv,&amp;env);
+     my_perl = perl_alloc();
+     perl_construct(my_perl);
+     perl_parse(my_perl, NULL, 3, embedding, NULL);
+     PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
+
+     text = NEWSV(1099,0);
+     sv_setpv(text, "When he is at a convenience store and the "
+        "bill comes to some amount like 76 cents, Maynard is "
+        "aware that there is something he *should* do, something "
+        "that will enable him to get back a quarter, but he has "
+        "no idea *what*.  He fumbles through his red squeezey "
+        "changepurse and gives the boy three extra pennies with "
+        "his dollar, hoping that he might luck into the correct "
+        "amount.  The boy gives him back two of his own pennies "
+        "and then the big shiny quarter that is his prize. "
+        "-RICHH");
+
+     if (match(text, "m/quarter/")) /** Does text contain 'quarter'? **/
+        printf("match: Text contains the word 'quarter'.\n\n");
+     else
+        printf("match: Text doesn't contain the word 'quarter'.\n\n");
+
+     if (match(text, "m/eighth/")) /** Does text contain 'eighth'? **/
+        printf("match: Text contains the word 'eighth'.\n\n");
+     else
+        printf("match: Text doesn't contain the word 'eighth'.\n\n");
+
+     /** Match all occurrences of /wi../ **/
+     num_matches = matches(text, "m/(wi..)/g", &amp;match_list);
+     printf("matches: m/(wi..)/g found %d matches...\n", num_matches);
+
+     for (i = 0; i &lt; num_matches; i++)
+        printf("match: %s\n", SvPV(*av_fetch(match_list, i, FALSE),n_a));
+     printf("\n");
+
+     /** Remove all vowels from text **/
+     num_matches = substitute(&amp;text, "s/[aeiou]//gi");
+     if (num_matches) {
+        printf("substitute: s/[aeiou]//gi...%d substitutions made.\n",
+               num_matches);
+        printf("Now text is: %s\n\n", SvPV(text,n_a));
+     }
+
+     /** Attempt a substitution **/
+     if (!substitute(&amp;text, "s/Perl/C/")) {
+        printf("substitute: s/Perl/C...No substitution made.\n\n");
+     }
+
+     SvREFCNT_dec(text);
+     PL_perl_destruct_level = 1;
+     perl_destruct(my_perl);
+     perl_free(my_perl);
+     PERL_SYS_TERM();
+ }</pre>
+		<p>&#23427;产生这样的输出（过长的行再次折叠了）：</p>
+		<pre>   match: Text contains the word 'quarter'.
+
+   match: Text doesn't contain the word 'eighth'.
+
+   matches: m/(wi..)/g found 2 matches...
+   match: will
+   match: with
+
+   substitute: s/[aeiou]//gi...139 substitutions made.
+   Now text is: Whn h s t  cnvnnc str nd th bll cms t sm mnt lk 76 cnts,
+   Mynrd s wr tht thr s smthng h *shld* d, smthng tht wll nbl hm t gt bck
+   qrtr, bt h hs n d *wht*.  H fmbls thrgh hs rd sqzy chngprs nd gvs th by
+   thr xtr pnns wth hs dllr, hpng tht h mght lck nt th crrct mnt.  Th by gvs
+   hm bck tw f hs wn pnns nd thn th bg shny qrtr tht s hs prz. -RCHH
+
+   substitute: s/Perl/C...No substitution made.</pre>
+		<h2><span id="(22312)_C_(31243)(24207)(20013)(22635)(20805)_Perl_(21442)(25968)(26632)">&#22312; C 程序中填充 Perl 参数栈</span></h2>
+		<p>&#22823;多数计算机教科书对于栈的解释都是重复关于放置咖啡盘的比喻（most computer science textbooks mumble something about spring-loaded columns of cafeteria plates）：最后你放到栈中的东西就是你第一个取出的。 这是我们的要做的：C 程序放置一些参数到“Perl 栈”中，当魔术发生时闭上它的 眼睛，然后从栈上取出结果——Perl 函数的返回值（That'll do for our purposes: your C program will push some arguments onto "the Perl stack", shut its eyes while some magic happens, and then pop the results--the return value of your Perl subroutine--off the stack.）</p>
+		<p>&#39318;先，你要知道怎样在 C 类型和 Perl 类型之间转换，使用 newSViv()、 sv_setnv、newAV() 以及其它它们的朋友。它们在 <a href="perlguts.html" class="podlinkpod">perlguts</a> 和 <a href="perlapi.html" class="podlinkpod">perlapi</a> 中有说明。</p>
+		<p>&#28982;后你要知道如何操纵 Perl 参数栈。在 <a href="perlcall.html" class="podlinkpod">perlcall</a> 中有说明。</p>
+		<p>&#19968;旦你明白这些，在 C 中嵌入 Perl 是很简单的。</p>
+		<p>&#22240;为 C 没有内建的函数进行整数的指数运算，让我们用 Perl 的 ** 运算符实 现它（这比它听上去没用得多，因为 Perl 用 C <i>pow()</i> 函数实现 **）。首 先在 <i>power.pl</i> 中创建一个简短的指数函数：</p>
+		<pre>    sub expo {
+        my ($a, $b) = @_;
+        return $a ** $b;
+    }</pre>
+		<p>&#29616;在我创建一个 C 程序 <i>power.c</i>&#65292;通过 <i>PerlPower()</i> （包含所有必须的 perlguts）将两个参数放到<i>expo()</i> 并取出返回值。深吸一口气：</p>
+		<pre>    #include &lt;EXTERN.h&gt;
+    #include &lt;perl.h&gt;
+
+    static PerlInterpreter *my_perl;
+
+    static void
+    PerlPower(int a, int b)
+    {
+      dSP;                            /* initialize stack pointer      */
+      ENTER;                          /* everything created after here */
+      SAVETMPS;                       /* ...is a temporary variable.   */
+      PUSHMARK(SP);                   /* remember the stack pointer    */
+      XPUSHs(sv_2mortal(newSViv(a))); /* push the base onto the stack  */
+      XPUSHs(sv_2mortal(newSViv(b))); /* push the exponent onto stack  */
+      PUTBACK;                      /* make local stack pointer global */
+      call_pv("expo", G_SCALAR);      /* call the function             */
+      SPAGAIN;                        /* refresh stack pointer         */
+                                    /* pop the return value from stack */
+      printf ("%d to the %dth power is %d.\n", a, b, POPi);
+      PUTBACK;
+      FREETMPS;                       /* free that return value        */
+      LEAVE;                       /* ...and the XPUSHed "mortal" args.*/
+    }
+
+    int main (int argc, char **argv, char **env)
+    {
+      char *my_argv[] = { "", "power.pl" };
+
+      PERL_SYS_INIT3(&amp;argc,&amp;argv,&amp;env);
+      my_perl = perl_alloc();
+      perl_construct( my_perl );
+
+      perl_parse(my_perl, NULL, 2, my_argv, (char **)NULL);
+      PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
+      perl_run(my_perl);
+
+      PerlPower(3, 4);                      /*** Compute 3 ** 4 ***/
+
+      perl_destruct(my_perl);
+      perl_free(my_perl);
+      PERL_SYS_TERM();
+    }</pre>
+		<p>&#32534;译并运行：</p>
+		<pre>    % cc -o power power.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+
+    % power
+    3 to the 4th power is 81.</pre>
+		<h2><span id="(20445)(25345)(19968)(20010)(25345)(20037)(30340)(35299)(37322)(22120)">&#20445;持一个持久的解释器</span></h2>
+		<p>&#24403;开发一个交互而且（或者）可能是持久运行的应用程序，不要多次分配构建新 的解释器，保持一个持久的解释器是一个好主意。最主要的原因是速度：因为 Perl 只要导入到内存中一次。</p>
+		<p>&#23613;管这样，当使用一个持久的解释器时要特别小心名字空间和变量作用域。在前 面的例子中，我们在默认的包 <code>main</code> 中使用全局变量。我们很清楚地知道代 码是怎样运行的，并且假定我们能够避免变量冲突和符号表的增长。</p>
+		<p>&#20551;定你的应用程序是一个服务器，它偶尔运行一些文件中的 Perl 代码。你的服 务器是不知道要运行什么代码的。这很危险。</p>
+		<p>&#22914;果文件用 <code>perl_parse()</code> 引入的，编译成一个新创建的解释器，然后接着 用 <code>perl_destruct()</code> 作一次清理，这样就可以屏蔽了大多数的名字空间的问 题。</p>
+		<p>&#19968;个避免名字空间冲突的方法是将文件名转换成一个唯一的包名，然后用 <a href="perlfunc.html#eval" class="podlinkpod">"eval" in perlfunc</a> 将这段代码编译到这个包中。在下面的例子中，每个文件只 编译一次。或者这个应用程序在一个文件中的符号表不再需要时可能会清除这个 符号表。使用 <a href="perlapi.html#call_argv" class="podlinkpod">"call_argv" in perlapi</a>&#65292;我们调用在 <code>persistent.pl</code> 文件中 的 <code>Embed::Persistent::eval_file</code>&#65292;传递一个文件名以及一个清除或者缓冲 的标签作为参数。</p>
+		<p>&#27880;意到对于每个使用的文件，这个进程都要不断增长。另外，可能有 <code>AUTOLOAD</code> 函数或者其它条件导致 Perl 符号表的增长。你可能想加入一些逻 辑判断来跟踪进程的大小，或者在一定次数的请求之后重新启动一次，这样来保证内 存的消耗是保证最小的。你可能还会在可能的时候用 <a href="perlfunc.html#my" class="podlinkpod">"my" in perlfunc</a> 限定变量的范围。</p>
+		<pre> package Embed::Persistent;
+ #persistent.pl
+
+ use strict;
+ our %Cache;
+ use Symbol qw(delete_package);
+
+ sub valid_package_name {
+     my($string) = @_;
+     $string =~ s/([^A-Za-z0-9\/])/sprintf("_%2x",unpack("C",$1))/eg;
+     # second pass only for words starting with a digit
+     $string =~ s|/(\d)|sprintf("/_%2x",unpack("C",$1))|eg;
+
+     # Dress it up as a real package name
+     $string =~ s|/|::|g;
+     return "Embed" . $string;
+ }
+
+ sub eval_file {
+     my($filename, $delete) = @_;
+     my $package = valid_package_name($filename);
+     my $mtime = -M $filename;
+     if(defined $Cache{$package}{mtime}
+        &amp;&amp;
+        $Cache{$package}{mtime} &lt;= $mtime)
+     {
+        # we have compiled this subroutine already,
+        # it has not been updated on disk, nothing left to do
+        print STDERR "already compiled $package-&gt;handler\n";
+     }
+     else {
+        local *FH;
+        open FH, $filename or die "open '$filename' $!";
+        local($/) = undef;
+        my $sub = &lt;FH&gt;;
+        close FH;
+
+        #wrap the code into a subroutine inside our unique package
+        my $eval = qq{package $package; sub handler { $sub; }};
+        {
+            # hide our variables within this block
+            my($filename,$mtime,$package,$sub);
+            eval $eval;
+        }
+        die $@ if $@;
+
+        #cache it unless we're cleaning out each time
+        $Cache{$package}{mtime} = $mtime unless $delete;
+     }
+
+     eval {$package-&gt;handler;};
+     die $@ if $@;
+
+     delete_package($package) if $delete;
+
+     #take a look if you want
+     #print Devel::Symdump-&gt;rnew($package)-&gt;as_string, $/;
+ }
+
+ 1;
+
+ __END__
+
+ /* persistent.c */
+ #include &lt;EXTERN.h&gt;
+ #include &lt;perl.h&gt;
+
+ /* 1 = clean out filename's symbol table after each request, 0 = don't */
+ #ifndef DO_CLEAN
+ #define DO_CLEAN 0
+ #endif
+
+ #define BUFFER_SIZE 1024
+
+ static PerlInterpreter *my_perl = NULL;
+
+ int
+ main(int argc, char **argv, char **env)
+ {
+     char *embedding[] = { "", "persistent.pl" };
+     char *args[] = { "", DO_CLEAN, NULL };
+     char filename[BUFFER_SIZE];
+     int exitstatus = 0;
+     STRLEN n_a;
+
+     PERL_SYS_INIT3(&amp;argc,&amp;argv,&amp;env);
+     if((my_perl = perl_alloc()) == NULL) {
+        fprintf(stderr, "no memory!");
+        exit(1);
+     }
+     perl_construct(my_perl);
+
+     exitstatus = perl_parse(my_perl, NULL, 2, embedding, NULL);
+     PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
+     if(!exitstatus) {
+        exitstatus = perl_run(my_perl);
+
+        while(printf("Enter file name: ") &amp;&amp;
+              fgets(filename, BUFFER_SIZE, stdin)) {
+
+            filename[strlen(filename)-1] = '\0'; /* strip \n */
+            /* call the subroutine, passing it the filename as an argument */
+            args[0] = filename;
+            call_argv("Embed::Persistent::eval_file",
+                           G_DISCARD | G_EVAL, args);
+
+            /* check $@ */
+            if(SvTRUE(ERRSV))
+                fprintf(stderr, "eval error: %s\n", SvPV(ERRSV,n_a));
+        }
+     }
+
+     PL_perl_destruct_level = 0;
+     perl_destruct(my_perl);
+     perl_free(my_perl);
+     PERL_SYS_TERM();
+     exit(exitstatus);
+ }</pre>
+		<p>Now compile:</p>
+		<pre> % cc -o persistent persistent.c `perl -MExtUtils::Embed -e ccopts -e ldopts`</pre>
+		<p>Here's an example script file:</p>
+		<pre> #test.pl
+ my $string = "hello";
+ foo($string);
+
+ sub foo {
+     print "foo says: @_\n";
+ }</pre>
+		<p>Now run:</p>
+		<pre> % persistent
+ Enter file name: test.pl
+ foo says: hello
+ Enter file name: test.pl
+ already compiled Embed::test_2epl-&gt;handler
+ foo says: hello
+ Enter file name: ^C</pre>
+		<h2><span id="(25191)(34892)_END_(22359)">&#25191;行 END 块</span></h2>
+		<p>&#20256;统的 END 块在 perl_run 的结束时执行了。对于不调用 perl_run 的应用程 序这会有一些问题。从 perl 5.7.2 开始，你可以指定 <code>PL_exit_flags |= PERL_EXIT_DESTRUCT_END</code> 来获得新特性。这也可以在 perl_parse 失败之后调 用 END 块，<code>perl_destruct</code> 将返回退出值。</p>
+		<h2><span id="(20445)(25345)(22810)(20010)(35299)(37322)(22120)(30340)(23454)(20363)">&#20445;持多个解释器的实例</span></h2>
+		<p>&#19968;些罕见的应用程序在一次对话中需要创建多个解释器。可能要偶然释放解释器 对应的资源。</p>
+		<p>&#36825;个程序要确保要在下一个解释器就做这些事。默认情况下，当 perl 不用任何 选项构建时，全局变量 <code>PL_perl_destruct_level</code> 设置为 0。因为在一个程 序生存期中只创建一个解释器是不需要进行额外的清理。</p>
+		<p>&#23558; <code>PL_perl_destruct_level</code> 设置为 <code>1</code> 可以使所有的都清除了：</p>
+		<pre> while(1) {
+     ...
+     /* reset global variables here with PL_perl_destruct_level = 1 */
+     PL_perl_destruct_level = 1;
+     perl_construct(my_perl);
+     ...
+     /* clean and reset _everything_ during perl_destruct */
+     PL_perl_destruct_level = 1;
+     perl_destruct(my_perl);
+     perl_free(my_perl);
+     ...
+     /* let's go do it again! */
+ }</pre>
+		<p>&#24403; <i>perl_destruct()</i> 调用时，这个解释器的语法解析树和符号表就被清除， 全局变量也被重新设置。因为 perl_construct 会将 <code>PL_perl_destruct_level</code> 重新设置为 <code>0</code>&#65292;所以要再一次设置 <code>PL_perl_destruct_level</code>&#12290;</p>
+		<p>&#29616;在假定我们同时有多个解释器运行。这是可以做到的，但是只有在你创建 perl 时使用配置选项 <code>-Dusemultiplicity</code> 或者 <code>-Dusethreads -Duseithreads</code>&#12290;缺省情况下，打开这些配置选项中的一个就把这个 per-interpreter 全局变量 <code>PL_perl_destruct_level</code> 设置为 1。所以清理 是自动的，并且解释器变量变正确的初始化。即使你不用同时运行多个解释器， 而是要像前面的例子那样顺序运行，但还是建议你用 <code>-Dusemultiplicity</code> 选项来编译 perl。否则一些解释器的变量在连续运行过程中不会正确的初始化，你 的运行程序可能会崩溃。</p>
+		<p>&#22914;果你打算在不同线程中并发运行多个解释器时，使用 <code>-Dusethreads -Duseithreads</code> 而不是<code>-Dusemultiplicity</code> 可能更合适。因为这可以对解释 器支持链接到系统的线程库。</p>
+		<p>&#35753;我们来试一下：</p>
+		<pre> #include &lt;EXTERN.h&gt; #include &lt;perl.h&gt;
+
+ /* we're going to embed two interpreters */
+ /* we're going to embed two interpreters */
+
+ #define SAY_HELLO "-e", "print qq(Hi, I'm $^X\n)"
+
+ int main(int argc, char **argv, char **env)
+ {
+     PerlInterpreter *one_perl, *two_perl;
+     char *one_args[] = { "one_perl", SAY_HELLO };
+     char *two_args[] = { "two_perl", SAY_HELLO };
+
+     PERL_SYS_INIT3(&amp;argc,&amp;argv,&amp;env);
+     one_perl = perl_alloc();
+     two_perl = perl_alloc();
+
+     PERL_SET_CONTEXT(one_perl);
+     perl_construct(one_perl);
+     PERL_SET_CONTEXT(two_perl);
+     perl_construct(two_perl);
+
+     PERL_SET_CONTEXT(one_perl);
+     perl_parse(one_perl, NULL, 3, one_args, (char **)NULL);
+     PERL_SET_CONTEXT(two_perl);
+     perl_parse(two_perl, NULL, 3, two_args, (char **)NULL);
+
+     PERL_SET_CONTEXT(one_perl);
+     perl_run(one_perl);
+     PERL_SET_CONTEXT(two_perl);
+     perl_run(two_perl);
+
+     PERL_SET_CONTEXT(one_perl);
+     perl_destruct(one_perl);
+     PERL_SET_CONTEXT(two_perl);
+     perl_destruct(two_perl);
+
+     PERL_SET_CONTEXT(one_perl);
+     perl_free(one_perl);
+     PERL_SET_CONTEXT(two_perl);
+     perl_free(two_perl);
+     PERL_SYS_TERM();
+ }</pre>
+		<p>&#27880;意 PERL_SET_CONTEXT() 的调用。这对于全局状态的初始化中必须的（ These are necessary to initialize the global state that tracks which interpreter is the "current" one on the particular process or thread that may be running it.）如果你有多个解释器并且同时对这些解释器交叉调 用 perl API，就应该总是使用它。</p>
+		<p>&#24403; <code>interp</code> 在一个不是创建它的线程（使用 perl_alloc() 或者更深奥 的 perl_clone()）使用时，也应该调用 PERL_SET_CONTEXT(interp)。</p>
+		<p>&#20687;通常那样编译：</p>
+		<pre> % cc -o multiplicity multiplicity.c `perl -MExtUtils::Embed -e ccopts -e ldopts`</pre>
+		<p>&#36214;快运行吧：</p>
+		<pre> % multiplicity
+ Hi, I'm one_perl
+ Hi, I'm two_perl</pre>
+		<h2><span id="(22312)(20320)(30340)_C_(31243)(24207)(20013)(20351)(29992)_Perl_(27169)(22359)(65292)(36825)(20123)(27169)(22359)(26412)(36523)(20063)(20351)(29992)_C_(24211)">&#22312;你的 C 程序中使用 Perl 模块，这些模块本身也使用 C 库</span></h2>
+		<p>&#22914;果你在使用上面的例子中试图嵌入一个脚本，这个脚本调用一个使用 C 或者 C++ 库的 Perl 模块（例如 <i>Socket</i>&#65289;，可能会发生：</p>
+		<pre> Can't load module Socket, dynamic loading not available in this perl.
+  (You may need to build a new perl executable which either supports
+  dynamic loading or has the Socket module statically linked into it.)</pre>
+		<p>&#20986;什么错了？</p>
+		<p>&#20320;的解释器不知道怎样与这些扩展交流。一个小小的粘合代码将会起到作用。直 到现在你还是用 NULL 作为第二个参数调用 <i>perl_parse()</i>&#12290;</p>
+		<pre> perl_parse(my_perl, NULL, argc, my_argv, NULL);</pre>
+		<p>&#36825;是使用粘合代码的地方，它在 Perl 和链接的 C/C++ 函数创建起始的连接。 让我们看看在 <i>perlmain.c</i> 中的一段看看 Perl 是怎样做的：</p>
+		<pre> static void xs_init (pTHX);
+
+ EXTERN_C void boot_DynaLoader (pTHX_ CV* cv);
+ EXTERN_C void boot_Socket (pTHX_ CV* cv);
+
+
+ EXTERN_C void
+ xs_init(pTHX)
+ {
+        char *file = __FILE__;
+        /* DynaLoader is a special case */
+        newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
+        newXS("Socket::bootstrap", boot_Socket, file);
+ }</pre>
+		<p>&#23545;于每个要链接到你的 Perl 可执行程序的扩展（由你电脑的初始化配置决定或 者当加入一个新的扩展），创建一个 Perl 函数整合扩展中的函数。通常这个函 数叫 <i>Module::boostrap()</i>&#65292;当你使用 <i>use Module</i> 就调用了这个函数。 In turn, this hooks into an XSUB, <i>boot_Module</i>, which creates a Perl counterpart for each of the extension's XSUBs. Don't worry about this part; leave that to the <i>xsubpp</i> and extension authors. If your extension is dynamically loaded, DynaLoader creates <i>Module::bootstrap()</i> for you on the fly. In fact, if you have a working DynaLoader then there is rarely any need to link in any other extensions statically.</p>
+		<p>&#19968;旦你有这段代码，把它加到 <i>perl_parse()</i> 的第二个参数中：</p>
+		<pre> perl_parse(my_perl, xs_init, argc, my_argv, NULL);</pre>
+		<p>&#28982;后编译：</p>
+		<pre> % cc -o interp interp.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
+
+ % interp
+   use Socket;
+   use SomeDynamicallyLoadedModule;
+
+   print "Now I can use extensions!\n"'</pre>
+		<p><b>ExtUtils::Embed</b> 也能自动写 <i>xs_init</i> 粘合代码：</p>
+		<pre> % perl -MExtUtils::Embed -e xsinit -- -o perlxsi.c
+ % cc -c perlxsi.c `perl -MExtUtils::Embed -e ccopts`
+ % cc -c interp.c  `perl -MExtUtils::Embed -e ccopts`
+ % cc -o interp perlxsi.o interp.o `perl -MExtUtils::Embed -e ldopts`</pre>
+		<p>&#35814;细内容参考 <a href="perlxs.html" class="podlinkpod">perlxs</a>&#12289;<a href="perlguts.html" class="podlinkpod">perlguts</a> 和 <a href="perlapi.html" class="podlinkpod">perlapi</a>&#12290;</p>
+		<h1><span id="(22312)_Win32_(23884)(20837)_Perl">&#22312; Win32 嵌入 Perl</span></h1>
+		<p>&#19968;般，这里显示的所有代码在 Windows 下不用任何修改就能工作。</p>
+		<p>&#23613;管这样，这里有一些命令行例子的警告。对于初学者，在 Win32 本身的命令 行中是不能使用反引号的。在 CPAN 的 ExtUtils::Embed 中有一个称为 <b>genmake</b> 脚本。这可以从单个的 C 源文件中创建一个简单的 makefile。可 以这样使用：</p>
+		<pre> C:\ExtUtils-Embed\eg&gt; perl genmake interp.c
+ C:\ExtUtils-Embed\eg&gt; nmake
+ C:\ExtUtils-Embed\eg&gt; interp -e "print qq{I'm embedded in Win32!\n}"</pre>
+		<p>&#20320;可能想在 Microsoft Developer Studio 中使用更稳健的环境（ You may wish to use a more robust environment such as the Microsoft Developer Studio.）。在这种情况下中，用这个来产生 perlxsi.c：</p>
+		<pre> perl -MExtUtils::Embed -e xsinit</pre>
+		<p>&#21019;建一个新的工程，然后 Insert -&gt; Files 到工程中：perlxsi.c，perl.lib， 和你自己的源文件，例如 interp.c。一般你可以在 <b>C:\perl\lib\CORE</b> 中找 到 perl.lib。如果没有的话，你可以用 <code>perl -V:archlib</code> 中找到 <b>CORE</b> 目录。studio 还要知道在哪里找到 Perl 的 include 文件。这个路径可以通过 Tools -&gt; Options -&gt; Directories 菜单来加入。最后，选择 Build -&gt; Build interp.exe，这样就好了。</p>
+		<h1><span id="(38544)(34255)_Perl_">&#38544;藏 Perl_</span></h1>
+		<p>&#22312;编译标签中加入 -DPERL_NO_SHORT_NAMES，你就可以隐藏 Perl 公共接口的简短 形式。这意味着你不能这样写：</p>
+		<pre>    warn("%d bottles of beer on the wall", bottlecount);</pre>
+		<p>&#20320;必须写明确完全的形式：</p>
+		<pre>    Perl_warn(aTHX_ "%d bottles of beer on the wall", bottlecount);</pre>
+		<p>&#65288;参考 <a href="perlguts.html#Background_and_PERL_IMPLICIT_CONTEXT_for_the_explanation_of_the_aTHX_." class="podlinkpod">"Background and PERL_IMPLICIT_CONTEXT for the explanation of the <code>aTHX_</code>." in perlguts</a>&#65289;隐藏简短的形式对于避免和其它软件包的冲突（C 预处理 或者其它）。（Perl 用简短名字定义了 2400 API，所以很有可能发生冲突。）</p>
+		<h1><span id="MORAL">MORAL</span></h1>
+		<p>&#26377;时可以在 C 中写出 <i>&#36816;行更快的代码（write faster code）</i>&#65292;但是你总是可以在 Perl 中<i>&#26356;快地写出代码（write code faster）</i>&#12290;因为你可以相互使用对方，只 要你需要可以结合起来。</p>
+		<h1><span id="AUTHOR">AUTHOR</span></h1>
+		<p>Jon Orwant &lt;<em>orwant@media.mit.edu</em>&gt; and Doug MacEachern &lt;<em>dougm@covalent.net</em>&gt;, with small contributions from Tim Bunce, Tom Christiansen, Guy Decoux, Hallvard Furuseth, Dov Grobgeld, and Ilya Zakharevich.</p>
+		<p>Doug MacEachern has an article on embedding in Volume 1, Issue 4 of The Perl Journal ( http://www.tpj.com/ ). Doug is also the developer of the most widely-used Perl embedding: the mod_perl system (perl.apache.org), which embeds Perl in the Apache web server. Oracle, Binary Evolution, ActiveState, and Ben Sugars's nsapi_perl have used this model for Oracle, Netscape and Internet Information Server Perl plugins.</p>
+		<p>July 22, 1998</p>
+		<h1><span id="COPYRIGHT">COPYRIGHT</span></h1>
+		<p>Copyright (C) 1995, 1996, 1997, 1998 Doug MacEachern and Jon Orwant. All Rights Reserved.</p>
+		<p>Permission is granted to make and distribute verbatim copies of this documentation provided the copyright notice and this permission notice are preserved on all copies.</p>
+		<p>Permission is granted to copy and distribute modified versions of this documentation under the conditions for verbatim copying, provided also that they are marked clearly as modified versions, that the authors' names and title are unchanged (though subtitles and additional authors' names may be added), and that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.</p>
+		<p>Permission is granted to copy and distribute translations of this documentation into another language, under the above conditions for modified versions.</p>
+		<h1><span id="TRANSLATORS">TRANSLATORS</span></h1>
+		<p>YE Wenbin</p>
+	</body>
+</html>

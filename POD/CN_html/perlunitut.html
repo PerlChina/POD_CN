@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>perlunitut</title>
+		<meta charset="utf-8"/>
+	</head>
+	<body class="pod">
+		<span id="___top"/>
+		<h1><span id="NAME">NAME</span></h1>
+		<p>perlunitut - Perl万国码指南</p>
+		<h1><span id="DESCRIPTION">DESCRIPTION</span></h1>
+		<p>&#32534;程语言只能处理简单字符的日子一去不复返了！现代程序必须能够和那些“有趣 的”重音字母以及诸如欧洲符号一样的字符打交道。这意味着程序员要形成一种新 的习性，编写能够处理 Unicode 的软件并不困难，但的确需要一些规范，才能把 这件事情做好做对。</p>
+		<p>&#35201;了解字符集和字符编码，需要知道的很多。最好你能花一天时间来学习这些，但 对于基础知识，几分钟时间就足够了。</p>
+		<p>&#28982;而这些知识也不算很“基础”。这里假设你已经懂得字节和字符之间的区别，知道 有许多不同的字符集和编码，并且你的程序要很明确的区分它们。推荐的阅读物为 “The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)” 作者 Joel Spolsky, <a href="http://joelonsoftware.com/articles/Unicode.html" class="podlinkurl">http://joelonsoftware.com/articles/Unicode.html</a>.</p>
+		<p>&#36825;篇指南使用通用词汇，简单且有限介的绍了 Perl 提供的，与字符串相关的特性 。对于大多数项目，这些信息应该已经足够了。</p>
+		<h2><span id="(23450)(20041)">&#23450;义</span></h2>
+		<p>&#22312;开始时将一些概念弄清楚非常重要。这也是本篇指南最重要的部分。这里的提供 的信息可能和你之前在网络上找到的相冲突，最可能的原因是：它们大部分都错了 。</p>
+		<p>&#20320;可能要重读这一整节几次</p>
+		<h3><span id="(19975)(22269)(30721)(Unicode)">&#19975;国码(Unicode)</span></h3>
+		<p><b>Unicode</b> 是一个字符集，它提供了容纳字符的空间。字符的序数值叫做<b>&#30721;位 (code point)</b>&#12290;(实际上，码位和字符之间的区别已经很模糊了，这两个术语经常 互用。)</p>
+		<p>&#36825;世界上有很多很多很多码位，但计算机以字节为单位工作，一个字节自只能提供 256个值。万国码中包含的字符比这多多了，所以你必须使用某种方法来获得这些 字符。</p>
+		<p>&#19975;国码可以使用许多种编码方式编码，其中 UTF-8 用得最为广泛。在一种万国码 编码中，多字节的子序列可以用来存储一个码位，或者说：字符。</p>
+		<h3><span id="UTF-8">UTF-8</span></h3>
+		<p><b>UTF-8</b> 是一种万国码编码方式。很多人认为万国码和 UTF-8 是同一个东西，实 际上并不是。编码方式还有更多，但大半个世界都在以 UTF-8 为标准。</p>
+		<p>UTF-8 的前128个码位和 ASCII 编码一样。一个字节容纳一个字符。所有的其他字 符都使用了一种复杂的方法编码成两个或者更多（最高6）字节。幸运的是，Perl 替我们做了这一工作，所以我们不必担心这一点。</p>
+		<h3><span id="(25991)(26412)(20018)(65288)(23383)(31526)(20018)(65289)">&#25991;本串（字符串）</span></h3>
+		<p><b>&#25991;本串(Text strings)</b>&#65292;或者<b>&#23383;符串(character strings)</b>&#30001;字符组成。它 和字节没关系，和编码也没关系。字符就是字符而已。</p>
+		<p>&#23545;于一个文本串，你可以做一些操作，比如：</p>
+		<pre>    $text =~ s/foo/bar/;
+    if ($string =~ /^\d+$/) { ... }
+    $text = ucfirst $text;
+    my $character_count = length $text;</pre>
+		<p>&#23383;符的值（<code>ord</code>&#65292;<code>chr</code>&#65289;是对应的万国码码位。</p>
+		<h3><span id="(20108)(36827)(21046)(20018)(65288)(23383)(33410)(20018)(65289)">&#20108;进制串（字节串）</span></h3>
+		<p><b>&#20108;进制串(Binary strings)</b>&#25110;<b>&#23383;节串(byte strings)</b>&#30001;字节组成。这里没有 字符，只有字节。所有与外界（任何你当前 Perl 进程之外的东西）的交流都是通 过二进制串来实现。</p>
+		<p>&#22312;二进制串上，你可以做这些操作：</p>
+		<pre>    my (@length_content) = unpack "(V/a)*", $binary;
+    $binary =~ s/\x00\x0F/\xFF\xF0/;  # 给胆子大的 :)
+    print {$fh} $binary;
+    my $byte_count = length $binary;</pre>
+		<h3><span id="(32534)(30721)">&#32534;码</span></h3>
+		<p><b>&#32534;码</b>&#65288;作动词）是从<i>&#25991;本</i>&#21040;<i>&#20108;进制</i>&#30340;转换。要给文本串编码，你必须给 出目标编码，比如 <code>iso-8859</code> 或 <code>UTF-8</code>&#12290;有些编码并不完全支持万国码规范 ，比如 <code>iso-8859</code>("latin") 范围。那么在编码过程中，会丢失那些万国码不能 代表的字符，</p>
+		<h3><span id="(35299)(30721)">&#35299;码</span></h3>
+		<p><b>&#35299;码</b>&#26159;从二进制到文本的转换。解码时，你必须知道编码时用到的是哪种编码 方式。最重要的是，二进制串必须能被解码。试图把一张PNG图片解码成文本串是 不现实的。</p>
+		<h3><span id="(20869)(37096)(26684)(24335)">&#20869;部格式</span></h3>
+		<p>Perl有它自己的<b>&#20869;部格式</b>&#65292;它用这种内部格式来编码文本串，使其能保存到内 存里面。所有的文本串都是这种内部格式。事实上，它们从来没有其他格式。</p>
+		<p>&#20320;不需要知道这是什么格式，因为在你解码或者编码的时候，其间的转换会自动进 行。</p>
+		<h2><span id="(20320)(30340)(26032)(24037)(20855)(21253)">&#20320;的新工具包</span></h2>
+		<p>&#25226;下面几行加入到你的标准头部中：</p>
+		<pre>    use Encode qw(encode decode);</pre>
+		<p>&#25110;则，如果你很懒，只需要：</p>
+		<pre>    use Encode;</pre>
+		<h2><span id="I/O(27969)(65288)(30495)(27491)(30340)5(20998)(38047)(25351)(21335)(65289)">I/O流（真正的5分钟指南）</span></h2>
+		<p>&#19968;个程序典型的输入/输出流如下：</p>
+		<pre>    1. 收取和解码
+    2. 处理
+    3. 编码和输出</pre>
+		<p>&#22914;果你的输入是二进制，而且应该保持为二进制，那么你当然不需要把它解码为文 本串。在其他所有情况下，你都应该将其解码。</p>
+		<p>&#22914;果你不知道数据是如何被编码的，解码也不会很可靠。你可以选择的话，使用 UTF-8 标准化是个好主意。</p>
+		<pre>    my $foo   = decode('UTF-8', get 'http://example.com/'); my $bar   =
+    decode('ISO-8859-1', readline STDIN);
+    my $xyzzy = decode('Windows-1251', $cgi-&gt;param('foo'));</pre>
+		<p>&#22788;理过程就像你以前所知一样。唯一的不同是，你使用的是字符，而不是字节。当 你在使用如 <code>substr</code> 或 <code>length</code> 时，这一点非常有用。</p>
+		<p>&#22312;文本串中没有字节，知道这一点很重要。当然，Perl有它的内部格式，用来在内 存中存储字符串，但请你忽略这一点。如果你需要做一些关于字节数目的事情，你 最好把这些事情挪到步骤3，将字符串编码之后。这样你才能准确的知道目标串里 面有多少字节。</p>
+		<p>&#23558;文本串编码成二进制串的方法如下：</p>
+		<pre>    $body = encode('UTF-8', $body);</pre>
+		<p>&#22914;果你需要知道字符串字节的长度，此时就是最好的时侯。因为 <code>$body</code> 现在是 字节串了，<code>length</code> 会报告字节的数目，而不是字符的数目。字符数现在是未知 的，因为字符只存在于文本串。</p>
+		<pre>    my $byte_count = length $body;</pre>
+		<p>&#22914;果你所使用的协议支持设置你所使用的字符编码，那么请使用这个特性。比如 E-mail 和 HTTP 支持 MIME 头部，这样你可以使用 <code>Content-Type</code> 头部。它们 还可以有 <code>Content-Length</code>&#65292;用以表示<i>&#23383;节</i>&#30340;数目。如果已经知道了这个数 目，设置它永远是个好主意。</p>
+		<pre>    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Length: $byte_count"</pre>
+		<h1><span id="(24635)(32467)">&#24635;结</span></h1>
+		<p>&#23558;你收到的所有东西解码，将你发出的所有东西编码。（如果是文本数据的话。）</p>
+		<h1><span id="Q_and_A_(or_FAQ)">Q and A (or FAQ)</span></h1>
+		<p>&#35835;完这篇文档之后，你应该继续阅读 <a href="perlunifaq.html" class="podlinkpod">perlunifaq</a></p>
+		<h1><span id="(33268)(35874)">&#33268;谢</span></h1>
+		<p>Thanks to Johan Vromans from Squirrel Consultancy. His UTF-8 rants during the Amsterdam Perl Mongers meetings got me interested and determined to find out how to use character encodings in Perl in ways that don't break easily.</p>
+		<p>Thanks to Gerard Goossen from TTY. His presentation "UTF-8 in the wild" (Dutch Perl Workshop 2006) inspired me to publish my thoughts and write this tutorial.</p>
+		<p>Thanks to the people who asked about this kind of stuff in several Perl IRC channels, and have constantly reminded me that a simpler explanation was needed.</p>
+		<p>Thanks to the people who reviewed this document for me, before it went public. They are: Benjamin Smith, Jan-Pieter Cornet, Johan Vromans, Lukas Mai, Nathan Gray.</p>
+		<h1><span id="AUTHOR">AUTHOR</span></h1>
+		<p>Juerd Waalboer &lt;#####@juerd.nl&gt;</p>
+		<h1><span id="SEE_ALSO">SEE ALSO</span></h1>
+		<p><a href="perlunifaq.html" class="podlinkpod">perlunifaq</a>, <a href="perlunicode.html" class="podlinkpod">perlunicode</a>, <a href="perluniintro.html" class="podlinkpod">perluniintro</a>, <a href="Encode.html" class="podlinkpod">Encode</a></p>
+		<h1><span id="TRANSLATORS">TRANSLATORS</span></h1>
+		<p>Woosley Xu. <code>woosley.xu@gmail.com</code></p>
+	</body>
+</html>
