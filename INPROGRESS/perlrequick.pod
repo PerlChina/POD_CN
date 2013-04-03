@@ -1,20 +1,32 @@
 =head1 NAME
+=head1 名称
 
 perlrequick - Perl regular expressions quick start
 
+perlrequick - Perl 正则式快速入门
+
 =head1 DESCRIPTION
+=head1 概述
 
 This page covers the very basics of understanding, creating and
 using regular expressions ('regexes') in Perl.
 
+本文介绍 Perl 正则式的基本知识。
+
 
 =head1 The Guide
 
+=head1 正文
+
 =head2 Simple word matching
+
+=head2 单词匹配
 
 The simplest regex is simply a word, or more generally, a string of
 characters.  A regex consisting of a word matches any string that
 contains that word:
+
+最简单的正则式就是单词本身，也就是字符串。一个由单词构成的正则式，匹配任意包括改单词的字符串。
 
     "Hello World" =~ /World/;  # matches
 
@@ -25,20 +37,27 @@ value if the regex matched, or false if the regex did not match.  In
 our case, C<World> matches the second word in C<"Hello World">, so the
 expression is true.  This idea has several variations.
 
+在上一语句中，C<Word>  是一个正则式，把C<World> 放到 C<//> 之间，告诉Perl在字符串
+中寻找C<World>。C<=~> 操作符 返回 true 如果匹配，返回 false。在我们的例子中，返回true。the idea has several variations. 
+
 Expressions like this are useful in conditionals:
+类似下面的条件表达式非常有用。
 
     print "It matches\n" if "Hello World" =~ /World/;
 
 The sense of the match can be reversed by using C<!~> operator:
+C<!~> 作用与 C<=~> 恰好相反。
 
     print "It doesn't match\n" if "Hello World" !~ /World/;
 
 The literal string in the regex can be replaced by a variable:
+要匹配的单词亦可以用一个变量替换。
 
     $greeting = "World";
     print "It matches\n" if "Hello World" =~ /$greeting/;
 
 If you're matching against C<$_>, the C<$_ =~> part can be omitted:
+如果要匹配的式 C<$_>，C<$_ =~ > 可以省略。
 
     $_ = "Hello World";
     print "It matches\n" if /World/;
@@ -46,6 +65,7 @@ If you're matching against C<$_>, the C<$_ =~> part can be omitted:
 Finally, the C<//> default delimiters for a match can be changed to
 arbitrary delimiters by putting an C<'m'> out front:
 
+另外，如果显示的写出C<’m’> 默认的限制符号 C<//> 可以被任意限制符号替换。 
     "Hello World" =~ m!World!;   # matches, delimited by '!'
     "Hello World" =~ m{World};   # matches, note the matching '{}'
     "/usr/bin/perl" =~ m"/perl"; # matches after '/usr/bin',
@@ -53,12 +73,14 @@ arbitrary delimiters by putting an C<'m'> out front:
 
 Regexes must match a part of the string I<exactly> in order for the
 statement to be true:
+正则式中的每一个字符必须按顺序严格匹配，结果才为true。
 
     "Hello World" =~ /world/;  # doesn't match, case sensitive
     "Hello World" =~ /o W/;    # matches, ' ' is an ordinary char
     "Hello World" =~ /World /; # doesn't match, no ' ' at end
 
 Perl will always match at the earliest possible point in the string:
+Perl 总是尽可能早的结束匹配。
 
     "Hello World" =~ /o/;       # matches 'o' in 'Hello'
     "That hat is red" =~ /hat/; # matches 'hat' in 'That'
@@ -66,10 +88,12 @@ Perl will always match at the earliest possible point in the string:
 Not all characters can be used 'as is' in a match.  Some characters,
 called B<metacharacters>, are reserved for use in regex notation.
 The metacharacters are
+有些字符不能直接用于匹配自身。有些字符，叫做元字符，用于构造正则式：
 
     {}[]()^$.|*+?\
 
 A metacharacter can be matched by putting a backslash before it:
+在元字符前加上“ \ ”就可以匹配自身。
 
     "2+2=4" =~ /2+2/;    # doesn't match, + is a metacharacter
     "2+2=4" =~ /2\+2/;   # matches, \+ is treated like an ordinary +
@@ -79,17 +103,26 @@ A metacharacter can be matched by putting a backslash before it:
 In the last regex, the forward slash C<'/'> is also backslashed,
 because it is used to delimit the regex.
 
+在最后一个例子中，‘/’ 之前也加了 ‘\’, 用于区分限制符 ‘/’。
+
 Non-printable ASCII characters are represented by B<escape sequences>.
 Common examples are C<\t> for a tab, C<\n> for a newline, and C<\r>
 for a carriage return.  Arbitrary bytes are represented by octal
 escape sequences, e.g., C<\033>, or hexadecimal escape sequences,
 e.g., C<\x1B>:
 
+非打印 ASCII 字符 are represented by B<escape sequence>. 比如：C<\t> 表示 tab 键。
+C<\n> 代表新一行。C<\r> 代表 cariage return。  Arbitrary bytes are represented by octal
+escape sequences, e.g., C<\033>, or hexadecimal escape sequences,
+e.g., C<\x1B>:
+
+             
     "1000\t2000" =~ m(0\t2)      # matches
     "cat"      =~ /\143\x61\x74/ # matches in ASCII, but a weird way to spell cat
 
 Regexes are treated mostly as double-quoted strings, so variable
 substitution works:
+正则式中的变量可以被替换，效果跟放在双引号之内类似。
 
     $foo = 'house';
     'cathouse' =~ /cat$foo/;   # matches
@@ -101,6 +134,9 @@ match, we would use the B<anchor> metacharacters C<^> and C<$>.  The
 anchor C<^> means match at the beginning of the string and the anchor
 C<$> means match at the end of the string, or before a newline at the
 end of the string.  Some examples:
+以上所有的正则式，不管正则式匹配了字符串的哪个地方，都算匹配。
+如果要限定匹配的地方，可以用 B<anchor> 元字符  C<^> 和 C<$>。
+前者表示匹配字符串的开始，后者表示匹配字符串的结尾。         
 
     "housekeeper" =~ /keeper/;         # matches
     "housekeeper" =~ /^keeper/;        # doesn't match
@@ -109,11 +145,15 @@ end of the string.  Some examples:
     "housekeeper" =~ /^housekeeper$/;  # matches
 
 =head2 Using character classes
+=head2 使用通配符
 
 A B<character class> allows a set of possible characters, rather than
 just a single character, to match at a particular point in a regex.
 Character classes are denoted by brackets C<[...]>, with the set of
 characters to be possibly matched inside.  Here are some examples:
+ 
+B<通配符> 匹配特定字符的集合中的一个。不像一个简单的字符那样，只能匹配自身。
+通配符用C<[...]>构建。例如：
 
     /cat/;            # matches 'cat'
     /[bcr]at/;        # matches 'bat', 'cat', or 'rat'
@@ -122,18 +162,22 @@ characters to be possibly matched inside.  Here are some examples:
 In the last statement, even though C<'c'> is the first character in
 the class, the earliest point at which the regex can match is C<'a'>.
 
+在最后一句中，C<’c’> 是字符集的第一个字符。字符串首先匹配的字符却是C<’a’>。
+
     /[yY][eE][sS]/; # match 'yes' in a case-insensitive way
                     # 'yes', 'Yes', 'YES', etc.
     /yes/i;         # also match 'yes' in a case-insensitive way
 
 The last example shows a match with an C<'i'> B<modifier>, which makes
 the match case-insensitive.
+上例中最后一句中的 C<’i’> B<modifier> 的作用式，忽略大小写。
 
 Character classes also have ordinary and special characters, but the
 sets of ordinary and special characters inside a character class are
 different than those outside a character class.  The special
 characters for a character class are C<-]\^$> and are matched using an
 escape:
+???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 
    /[\]c]def/; # matches ']def' or 'cdef'
    $x = 'bcr';
@@ -145,16 +189,23 @@ The special character C<'-'> acts as a range operator within character
 classes, so that the unwieldy C<[0123456789]> and C<[abc...xyz]>
 become the svelte C<[0-9]> and C<[a-z]>:
 
+C<’-’> 叫区间操作符。so that the unwieldy C<[0123456789]> and C<[abc...xyz]>
+become the svelte C<[0-9]> and C<[a-z]>:
+
     /item[0-9]/;  # matches 'item0' or ... or 'item9'
     /[0-9a-fA-F]/;  # matches a hexadecimal digit
 
 If C<'-'> is the first or last character in a character class, it is
 treated as an ordinary character.
 
+如果 C<'-'> 是字符集的第一个子母，没有特殊意义。
+
 The special character C<^> in the first position of a character class
 denotes a B<negated character class>, which matches any character but
 those in the brackets.  Both C<[...]> and C<[^...]> must match a
 character, or the match fails.  Then
+ 如果 C<'-'> 是字符集的第一个子母，表示取反。通配符必须匹配一个字符。
+否则视为匹配失败。
 
     /[^a]at/;  # doesn't match 'aat' or 'at', but matches
                # all other 'bat', 'cat, '0at', '%at', etc.
@@ -165,11 +216,15 @@ Perl has several abbreviations for common character classes. (These
 definitions are those that Perl uses in ASCII mode with the C</a> modifier.
 See L<perlrecharclass/Backslash sequences> for details.)
 
+Perl 中，常见的字符集由简写形式。
+
 =over 4
 
 =item *
 
 \d is a digit and represents
+
+\d 等价与
 
     [0-9]
 
@@ -232,6 +287,7 @@ In the last example, the end of the string is considered a word
 boundary.
 
 =head2 Matching this or that
+=head2  匹配其中一个.
 
 We can match different character strings with the B<alternation>
 metacharacter C<'|'>.  To match C<dog> or C<cat>, we form the regex
@@ -309,6 +365,7 @@ C<$1>, C<$2>, ... should only be used outside of a regex, and C<\g1>,
 C<\g2>, ... only inside a regex.
 
 =head2 Matching repetitions
+=head2 通配符
 
 The B<quantifier> metacharacters C<?>, C<*>, C<+>, and C<{}> allow us
 to determine the number of repeats of a portion of a regex we
@@ -460,6 +517,7 @@ C<s'''>, then the regex and replacement are treated as single-quoted
 strings.
 
 =head2 The split operator
+=head2 split 
 
 C<split /regex/, string> splits C<string> into a list of substrings
 and returns that list.  The regex determines the character sequence
@@ -501,18 +559,37 @@ None.
 This is just a quick start guide.  For a more in-depth tutorial on
 regexes, see L<perlretut> and for the reference page, see L<perlre>.
 
+=head1 更多
+
+本文仅是一个快速参考，更多请阅读 L<perlretut> 和 L<perlre>.
+
 =head1 AUTHOR AND COPYRIGHT
+=head1 作者及版权
 
 Copyright (c) 2000 Mark Kvale
+
 All rights reserved.
+
 
 This document may be distributed under the same terms as Perl itself.
 
+本文档遵循 Perl 的版权规定。
+
 =head2 Acknowledgments
+=head2 致谢
 
 The author would like to thank Mark-Jason Dominus, Tom Christiansen,
 Ilya Zakharevich, Brad Hughes, and Mike Giroux for all their helpful
 comments.
 
+感谢 Mark-Jason Dominus, Tom Christiansen, Ilya Zakharevich, Brad Hughes,
+和 Mike Giroux 的评论。
+
+=head2 翻译
+
+Hao Wu <echowuhao@gmail.com>
+
 =cut
+
+
 
